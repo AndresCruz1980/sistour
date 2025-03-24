@@ -1,0 +1,20 @@
+[04-Mar-2025 03:57:27 UTC] PHP Warning:  require(/home/tupitcue/public_html/sistour.tupizatours.com/public/bootstrap/autoload.php): Failed to open stream: No such file or directory in /home/tupitcue/public_html/sistour.tupizatours.com/public/artisan.php on line 8
+[04-Mar-2025 03:57:27 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/tupitcue/public_html/sistour.tupizatours.com/public/bootstrap/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/tupitcue/public_html/sistour.tupizatours.com/public/artisan.php:8
+Stack trace:
+#0 {main}
+  thrown in /home/tupitcue/public_html/sistour.tupizatours.com/public/artisan.php on line 8
+[20-Mar-2025 01:07:34 UTC] PHP Warning:  require(/home/tupitcue/public_html/sistour.tupizatours.com/public/../bootstrap/autoload.php): Failed to open stream: No such file or directory in /home/tupitcue/public_html/sistour.tupizatours.com/public/clear_cache.php on line 7
+[20-Mar-2025 01:07:34 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/tupitcue/public_html/sistour.tupizatours.com/public/../bootstrap/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/tupitcue/public_html/sistour.tupizatours.com/public/clear_cache.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/tupitcue/public_html/sistour.tupizatours.com/public/clear_cache.php on line 7
+[20-Mar-2025 01:07:48 UTC] PHP Warning:  require(/home/tupitcue/public_html/sistour.tupizatours.com/public/../bootstrap/autoload.php): Failed to open stream: No such file or directory in /home/tupitcue/public_html/sistour.tupizatours.com/public/clear_cache.php on line 7
+[20-Mar-2025 01:07:48 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/tupitcue/public_html/sistour.tupizatours.com/public/../bootstrap/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/tupitcue/public_html/sistour.tupizatours.com/public/clear_cache.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/tupitcue/public_html/sistour.tupizatours.com/public/clear_cache.php on line 7
+[20-Mar-2025 01:08:44 UTC] PHP Warning:  require(/home/tupitcue/public_html/sistour.tupizatours.com/public/../bootstrap/autoload.php): Failed to open stream: No such file or directory in /home/tupitcue/public_html/sistour.tupizatours.com/public/clear_cache.php on line 7
+[20-Mar-2025 01:08:44 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/tupitcue/public_html/sistour.tupizatours.com/public/../bootstrap/autoload.php' (include_path='.:/opt/alt/php82/usr/share/pear:/opt/alt/php82/usr/share/php:/usr/share/pear:/usr/share/php') in /home/tupitcue/public_html/sistour.tupizatours.com/public/clear_cache.php:7
+Stack trace:
+#0 {main}
+  thrown in /home/tupitcue/public_html/sistour.tupizatours.com/public/clear_cache.php on line 7
