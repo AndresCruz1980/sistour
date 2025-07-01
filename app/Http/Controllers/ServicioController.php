@@ -23,8 +23,8 @@ class ServicioController extends Controller
      */
     public function create()
     {
-        $turistas = Servicio::all();
-        
+        $servicios = Servicio::all();
+
         return view('servicios.create', compact('servicios'));
     }
 
