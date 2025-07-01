@@ -37,6 +37,7 @@ package-lock.json
 yarn.lock
 
 ### Assets ###
+/deploy
 /node_modules
 /public/hot
 /public/storage
@@ -50,7 +51,12 @@ packages/
 .phpunit.result.cache
 .env.backup
 
+
 # Debug Files
 npm-debug.log
 yarn-error.log
+deploy.sh
 
+/mysql
+
+/resoursces/views/layouts

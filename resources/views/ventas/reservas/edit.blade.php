@@ -394,14 +394,6 @@ Agregar turista
                                     </div>
                                 </label>
                             </div>
-                                
-
-                            <div class="col-md-12">
-                                <div class="d-flex justify-content-center gap-2">
-                                    <a href="javascript:regresar2();" class="btn btn-danger regresar2 col-md-6" data-prev="primera_fase"><i class="fadeIn animated bx bx-arrow-to-left"></i>Regresar</a>
-                                    <a href="javascript:continuar2();" class="btn btn-primary continuar2 col-md-6" data-next="tercera_fase">Continuar <i class="fadeIn animated bx bx-arrow-to-right"></i></a>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -454,7 +446,8 @@ Agregar turista
                                     <div class="form-check">
                                         <input class="form-check-input ticket-checkbox" type="checkbox" name="ticket_id[]" value="{{ $ticket->id }}" 
                                             data-name="{{ $ticket->titulo }}" 
-                                            data-precio="{{ number_format($ticket->nacionales, 2, '.', '') }}"
+                                            data-hnac="{{ number_format($ticket->nacionales, 2, '.', '') }}"
+                                            data-hext="{{ number_format($ticket->extranjeros, 2, '.', '') }}"   
                                             id="ticket_{{ $ticket->id }}">
                                         <label class="form-check-label" for="ticket_{{ $ticket->id }}">
                                             {{ $ticket->titulo }} - Bs. {{ number_format($ticket->nacionales, 2, '.', '') }}
@@ -466,29 +459,44 @@ Agregar turista
                         
                             <!-- ✅ TAB HOTELES -->
                             <div class="tab-pane fade" id="tourhoteles" role="tabpanel">
-                                @foreach(json_decode($tour->hoteles, true) as $key => $hotelIds)
-                                <div class="row g-3">
-                                    <div class="col-md-12 form-check">
-                                        <label class="form-label" for="noche_{{ $key }}">Día {{ $key }}</label>
-                                        @foreach ($hoteles as $hotel)
-                                        @if(in_array($hotel->id, $hotelIds))
-                                        <div class="form-check">
-                                            <input class="form-check-input habitacion-checkbox" type="checkbox" 
-                                                value="{{ $hotel->id }}" 
-                                                data-name="{{ $hotel->titulo }}" 
-                                                data-precio="{{ number_format($hotel->precio, 2, '.', '') }}" 
-                                                id="hotel_{{ $hotel->id }}_{{ $key }}">
-                                            <label class="form-check-label" for="hotel_{{ $hotel->id }}_{{ $key }}">
-                                                {{ $hotel->titulo }} - Bs. {{ number_format($hotel->precio, 2, '.', '') }}
-                                            </label>
+                                @foreach(json_decode($tour->hoteles, true) as $dia => $hotelIds)
+                                    <div class="row g-3">
+                                        <div class="col-md-12 form-check">
+                                            <label class="form-label fw-bold">Día {{ $dia }}</label>
+
+                                            @foreach ($hoteles as $hotel)
+                                                @if(in_array($hotel->id, $hotelIds))
+                                                    <div class="form-check mb-2">
+                                                        <label class="form-check-label fw-bold">{{ $hotel->titulo }}</label>
+
+                                                        @foreach($habitaciones->where('hotel_id', $hotel->id) as $habitacion)
+                                                            <div class="form-check">
+                                                                <input class="form-check-input habitacion-checkbox"
+                                                                    type="radio"
+                                                                    name="habitacion_dia_{{ $dia }}"
+                                                                    id="form_habi_{{ $hotel->id }}_{{ $habitacion->id }}_dia{{ $dia }}"
+                                                                    value="{{ $habitacion->id }}"
+                                                                    data-name="{{ $habitacion->titulo }}"
+                                                                    data-precio="{{ number_format($habitacion->nacionales, 2, '.', '') }}"
+                                                                    data-hnac="{{ number_format($habitacion->nacionales, 2, '.', '') }}"
+                                                                    data-hext="{{ number_format($habitacion->extranjeros, 2, '.', '') }}" 
+                                                                    data-dia="{{ $dia }}"
+                                                                />
+                                                                <label class="form-check-label" for="form_habi_{{ $hotel->id }}_{{ $habitacion->id }}_dia{{ $dia }}">
+                                                                    {{ $habitacion->titulo }} - Bs. {{ number_format($habitacion->nacionales, 2, '.', '') }}
+                                                                </label>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                                            @endforeach
                                         </div>
-                                        @endif
-                                        @endforeach
                                     </div>
-                                </div>
                                 @endforeach
                             </div>
-                        
+
+
+                                                    
                             <!-- ✅ TAB ACCESORIOS -->
                             <div class="tab-pane fade" id="touraccesorios" role="tabpanel">
                                 <div class="col-md-12">
@@ -575,8 +583,8 @@ Agregar turista
                                 <span class="btn btn-inverse-success mb-3 col-md-12">Habitaciones</span>
                             </dt>
 
-                            <dt class="col-sm-9" id="hab_name"></dt>
-                            <dd class="col-sm-3 text-right" id="hab_pre"></dd>
+                            <dt class="col-sm-5" id="hab_name"></dt>
+                            <dd class="col-sm-7 text-right" id="hab_pre"></dd>
                         </dl>
 
                         <dl class="col-md-12 row accesorios_cont" id="accesorios_cont" style="display: none;">
@@ -690,22 +698,24 @@ Agregar turista
 
         /** ✅ Actualiza los totales de todos los checkboxes */
         function updateAllTotals() {
-            totalTickets = updateTotal(checkboxesTickets, ticketsCont, ticName, ticPre, "nac", "ext");
+            totalTickets = updateTotal(checkboxesTickets, ticketsCont, ticName, ticPre, "hnac", "hext");
             totalAccesorios = updateTotal(checkboxesAccesorios, accesoriosCont, accName, accPre, "precio");
             totalServicios = updateTotal(checkboxesServicios, serviciosCont, serName, serPre, "precio");
             totalHabitaciones = updateTotal(checkboxesHabitaciones, habitacionesCont, habName, habPre, "hnac", "hext");
 
             updateGrandTotal();
         }
-
-        /** ✅ Muestra u oculta los contenedores dinámicamente y suma los valores */
-        function updateTotal(checkboxes, container, nameField, priceField, priceAttrBO, priceAttrExt = priceAttrBO) {
+                /** ✅ Muestra u oculta los contenedores dinámicamente y suma los valores */
+        function updateTotal(checkboxes, container, nameField, priceField, priceAttrBO = "hnac", priceAttrExt = "hext") {
             let total = 0;
             let names = [], prices = [];
             let checkedCount = 0;
 
+            const isBolivian = nacionalidadSelect.value === "BO";
+
             checkboxes.forEach(checkbox => {
-                let price = parseFloat(checkbox.dataset.precio || "0"); // 🔥 AHORA LEE CORRECTAMENTE EL PRECIO
+                const priceAttr = isBolivian ? checkbox.dataset[priceAttrBO] : checkbox.dataset[priceAttrExt];
+                const price = parseFloat(priceAttr || "0");
 
                 if (checkbox.checked) {
                     checkedCount++;
@@ -727,6 +737,7 @@ Agregar turista
         }
 
 
+
         /** ✅ Actualiza el subtotal total */
         function updateGrandTotal() {
             let cantidad = parseInt(cantPerInput.value) || 1;
@@ -737,33 +748,28 @@ Agregar turista
             tourTotal.value = totalSum.toFixed(2);
         }
 
-        function saveSelections(checkboxes, hiddenFieldId) {
-            let selected = Array.from(checkboxes)
+        function saveSelections(checkboxes, hiddenFieldId, priceAttrBO = "hnac", priceAttrExt = "hext") {
+            const isBolivian = nacionalidadSelect.value === "BO";
+
+            const selected = Array.from(checkboxes)
                 .filter(checkbox => checkbox.checked)
                 .map(checkbox => {
-                    // Intenta obtener el precio desde dataset
-                    let rawPrice = checkbox.dataset.precio;  
-                    let price = rawPrice ? parseFloat(rawPrice.replace(",", "")) : 0;
+                    const price = parseFloat(isBolivian ? checkbox.dataset[priceAttrBO] : checkbox.dataset[priceAttrExt]) || 0;
 
-                    console.log(`📩 Guardando en ${hiddenFieldId}: ${checkbox.dataset.name} - Precio: ${price}`);
-
-                    return {
+                    const selection = {
                         id: checkbox.value,
                         name: checkbox.dataset.name,
                         price: price
                     };
+
+                    if (checkbox.dataset.dia) {
+                        selection.dia = parseInt(checkbox.dataset.dia);
+                    }
+
+                    return selection;
                 });
 
             document.getElementById(hiddenFieldId).value = JSON.stringify(selected);
-        }
-
-
-
-        function updateSelectedItems() {
-            saveSelections(checkboxesTickets, "tickets_seleccionados", "nac", "ext");
-            saveSelections(checkboxesAccesorios, "accesorios_seleccionados", "aprecio");
-            saveSelections(checkboxesServicios, "servicios_seleccionados", "sprecio");
-            saveSelections(checkboxesHabitaciones, "habitaciones_seleccionadas", "hnac", "hext");
         }
 
         // ✅ Eventos de checkboxes
@@ -771,6 +777,13 @@ Agregar turista
         checkboxesAccesorios.forEach(checkbox => checkbox.addEventListener("change", updateAllTotals));
         checkboxesServicios.forEach(checkbox => checkbox.addEventListener("change", updateAllTotals));
         checkboxesHabitaciones.forEach(checkbox => checkbox.addEventListener("change", updateAllTotals));
+
+        function updateSelectedItems() {
+            saveSelections(checkboxesTickets, "tickets_seleccionados", "hnac", "hext");
+            saveSelections(checkboxesHabitaciones, "habitaciones_seleccionadas", "hnac", "hext");
+            saveSelections(checkboxesAccesorios, "accesorios_seleccionados", "precio");
+            saveSelections(checkboxesServicios, "servicios_seleccionados", "precio");
+        }
 
         // ✅ Detecta cambios en los checkboxes y guarda los valores seleccionados
         checkboxesTickets.forEach(checkbox => checkbox.addEventListener("change", updateSelectedItems));
@@ -783,9 +796,7 @@ Agregar turista
         handleNacionalidadChange();
         updateAllTotals();
         updateSelectedItems();
-
     });
-
 </script>
 
 <script>

@@ -56,10 +56,12 @@ class Resercliente extends Model
 
         // Laravel ya maneja estos atributos como arrays, solo los sumamos
         $serviciosAdicionales = collect($this->servicios ?: [])->sum('price');
+        $habitacionesAdicionales = collect($this->habitaciones ?: [])->sum('price');
+
         $ticketsAdicionales = collect($this->tickets ?: [])->sum('price');
         $accesoriosAdicionales = collect($this->accesorios ?: [])->sum('price');
 
-        return $pre_per + $serviciosAdicionales + $ticketsAdicionales + $accesoriosAdicionales;
+        return $pre_per + $serviciosAdicionales + $ticketsAdicionales + $accesoriosAdicionales + $habitacionesAdicionales;
     }
     
     public function getTotalPendienteAttribute()

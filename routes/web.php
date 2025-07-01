@@ -26,8 +26,18 @@ Route::group(['middleware' => ['web', 'checkblocked']], function () {
 Route::resource('archivos', App\Http\Controllers\ArchivoController::class)->names('archivos');
 Route::resource('tienda', App\Http\Controllers\TiendaController::class)->names('tienda');
 
-Route::resource('reservas', App\Http\Controllers\ReservaController::class)->names('reservas');
-Route::get('ventas/resclis/user/{id}', 'App\Http\Controllers\Venta\RescliController@user')->name('venresclisuser');
+Route::post('reservas/external/store', [App\Http\Controllers\ReservaController::class, 'externalStore'])->name('reservas.store.external');
+
+Route::put('reservas/external/update/{id}', [App\Http\Controllers\ReservaController::class, 'externalUpdate'])
+    ->name('reservas.update.external');
+
+Route::get('reservas/external/update/{id}', [App\Http\Controllers\ReservaController::class, 'show'])
+    ->name('reservas.edit');
+
+Route::get('ventas/resclis/user/{id}', [App\Http\Controllers\Venta\RescliController::class, 'user'])->name('venresclisuser');
+
+Route::put('rescli/external/update/{id}', [App\Http\Controllers\Venta\RescliController::class, 'externalUpdate'])
+    ->name('venresclis.update.external');
 
 // Authentication Routes
 Auth::routes();
@@ -80,11 +90,12 @@ Route::group(['middleware' => ['auth', 'activated', 'activity', 'twostep', 'chec
     Route::resource('ventas/resclis', App\Http\Controllers\Venta\RescliController::class)->names('venresclis');
     Route::resource('ventas/vips', App\Http\Controllers\Venta\VipController::class)->names('venvips');
     
+    /* Despachos */
     Route::get('/despachos/vagonetas/{propietario_id}', 'App\Http\Controllers\Despacho\GestionController@obtenerVagonetas')->name('obtenerVagonetas');
     Route::get('/despachos/caballos/{propietario_id}', 'App\Http\Controllers\Despacho\GestionController@obtenerCaballos')->name('obtenerCaballos');
     Route::get('/despachos/bicicletas/{propietario_id}', 'App\Http\Controllers\Despacho\GestionController@obtenerBicicletas')->name('obtenerBicicletas');
     Route::post('/despachos/gestiones/anticipos', 'App\Http\Controllers\Despacho\GestionController@gesanticipos')->name('gesanticipos');
-
+    
     Route::resource('despachos/gestiones', App\Http\Controllers\Despacho\GestionController::class)->names('desges');
     Route::resource('despachos/transitos', App\Http\Controllers\Despacho\TransitoController::class)->names('destra');
     Route::resource('despachos/finalizados', App\Http\Controllers\Despacho\FinalizadoController::class)->names('desfin');
@@ -152,24 +163,48 @@ Route::group(['middleware' => ['auth', 'activated', 'activity', 'twostep', 'chec
     Route::resource('estatus', App\Http\Controllers\EstatusController::class)->names('estatus');
     Route::resource('miembros', App\Http\Controllers\MiembroController::class)->names('miembros');
 
-    Route::resource('caja', App\Http\Controllers\CajaController::class)->names('caja');
-    Route::resource('cajas/porcobros', App\Http\Controllers\Caja\PorcobroController::class)->names('cajacobros');
-    Route::resource('cajas/porpagos', App\Http\Controllers\Caja\PorpagoController::class)->names('cajapagos');
-
     /*Configuración CRUD*/
     Route::resource('configuracion', App\Http\Controllers\ConfiguracionController::class)->names('configuracion');
     Route::resource('configuraciones/idiomas', App\Http\Controllers\Configuracion\IdiomaController::class)->names('confidiomas');
     Route::resource('configuraciones/alergias', App\Http\Controllers\Configuracion\AlergiaController::class)->names('confalergias');
     Route::resource('configuraciones/alimentacion', App\Http\Controllers\Configuracion\AlimentacionController::class)->names('confalimentacion');
     Route::resource('configuraciones/bancos', App\Http\Controllers\Configuracion\BancoController::class)->names('confbancos');
-    Route::resource('configuraciones/impuestos', App\Http\Controllers\Configuracion\impuestoController::class)->names('confimpuestos');
+   // Route::resource('configuraciones/impuestos', App\Http\Controllers\Configuracion\impuestoController::class)->names('confimpuestos');
     Route::resource('configuraciones/monedas', App\Http\Controllers\Configuracion\MonedaController::class)->names('confmonedas');
     Route::resource('configuraciones/empresas', App\Http\Controllers\Configuracion\EmpresaController::class)->names('confempresas');
     Route::resource('configuraciones/cobros', App\Http\Controllers\Configuracion\CobroController::class)->names('confcobros');
     Route::resource('configuraciones/onlines', App\Http\Controllers\Configuracion\OnlineController::class)->names('confonlines');
     Route::resource('configuraciones/links', App\Http\Controllers\Configuracion\LinkController::class)->names('conflinks');
     Route::resource('configuraciones/qrs', App\Http\Controllers\Configuracion\QrController::class)->names('confqrs');
+
+    /* Caja CRUD*/
+
+    Route::resource('cajas/operaciones', App\Http\Controllers\Caja\CajaOperacionesController::class)->names('cajaop');
+    Route::resource('cajas/porcobros', App\Http\Controllers\Caja\PorcobroController::class)->names('cajacobros');
+    Route::resource('cajas/porpagos', App\Http\Controllers\Caja\PorpagoController::class)->names('cajapagos');
+
+    Route::get('/api/validar-monto-servicio', [App\Http\Controllers\Caja\PorpagoController::class, 'validarMontoServicio']);
+    Route::get('/api/saldo-anticipo', [App\Http\Controllers\Caja\PorpagoController::class, 'saldoAnticipo']);
+
+
+    Route::get('caja/index', [App\Http\Controllers\Caja\CajaController::class, 'index'])->name('caja.index');
+    Route::get('caja/movimientos', [App\Http\Controllers\Caja\CajaController::class, 'movimientos'])->name('caja.movimientos');
+
+    Route::post('caja/abrir', [App\Http\Controllers\Caja\CajaController::class, 'abrir'])->name('caja.abrir');
+    Route::post('caja/cerrar', [App\Http\Controllers\Caja\CajaController::class, 'cerrar'])->name('caja.cerrar');
+
+    Route::post('caja/movimiento', [App\Http\Controllers\Caja\CajaController::class, 'registrarMovimiento'])->name('caja.movimiento');
+
+    Route::resource('caja/cuentas', App\Http\Controllers\Caja\CuentaCajaController::class)->names('cuentas');
+
+    Route::get('/api/porpagos-disponibles', [App\Http\Controllers\Caja\MovimientoAjaxController::class, 'porpagosDisponibles']);
+
 });
+
+Route::resource('authorizations', App\Http\Controllers\AuthorizationController::class)->names('authorizations');
+Route::get('/imprimir-dispatch/{id}', [App\Http\Controllers\DispatchController::class, 'imprimirDispatch']);
+Route::resource('dispatchs', App\Http\Controllers\DispatchController::class)->names('dispatchs');
+Route::get('/dispatchs/authorization/{id}', ['uses' => 'App\Http\Controllers\DispatchController@index']);
 
 // Registered, activated, and is current user routes.
 Route::group(['middleware' => ['auth', 'activated', 'currentUser', 'activity', 'twostep', 'checkblocked']], function () {

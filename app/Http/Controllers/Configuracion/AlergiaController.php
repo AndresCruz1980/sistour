@@ -70,7 +70,8 @@ class AlergiaController extends Controller
         $alergia->estatus       = $request->estatus;
         $alergia->save();
 
-        return redirect()->route('confalergias.index')->with('success','Alergia actualizada');
+        /*return redirect()->route('configuracion.alergias.index')->with('success','Alergia actualizada');*/
+        return back()->with('success','Alergia actualizada');
     }
 
     /**
@@ -80,6 +81,7 @@ class AlergiaController extends Controller
     {
         Alergia::destroy($id);
 
-        return redirect()->route('confalergias.index')->with('success','Alergia eliminada');
+        /*return redirect()->route('configuracion.alergias.index')->with('success','Alergia eliminada');*/
+        return back()->with('success','Alergia eliminada');
     }
 }

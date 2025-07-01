@@ -102,7 +102,7 @@
                                                 @include('configuracion.alergias.edit')
                                             </form>
 
-                                            <form action="{{ route('estatus.update', $alergia->id) }}" class="ms-1" method="POST">
+                                            <form action="{{ route('confalergias.destroy', $alergia->id) }}" class="ms-1" method="POST">
                                                 @csrf
                                                 @method('PUT')
 

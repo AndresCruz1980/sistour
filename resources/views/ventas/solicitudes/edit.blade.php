@@ -45,7 +45,7 @@
                         @endphp
 
                         <h6 class="card-infos">
-                            Fecha de solicitud <b>{{ $newDate }}</b>
+                            Fecha de solicitud <b>{{\Carbon\Carbon::parse($reserva->created_at)->format('d-m-Y')}}</b>
                         </h6>
                         @php
                             $originalDate = $reserva->fecha;
@@ -298,13 +298,18 @@
                                 </div>
 
                                 @php
-                                    $pag_tot = ($reserva->total - (($reserva->can_per - 1) * $reserva->pre_per));
+                                    $prePer = floatval($reserva->pre_per ?? 0);
+
+                                    $canPer = intval($reserva->can_per ?? 0);
+                                    $total = floatval($reserva->total ?? 0);
+
+                                    $pag_tot = $total - (($canPer > 1 ? ($canPer - 1) : 0) * $prePer);
                                 @endphp
 
                                 <div class="col-md-4">
                                     <label class="form-label text-right"><b>{{ 'Bs. '.number_format($pag_tot, 2, '.', '') }}</b></label>
                                 </div>
-
+                                
                                 @if($reserva->turistas->first()->pago)
                                     <div class="pago_cont col-md-12">
                                         <img src="{{ asset('files_pagos') }}/{{ $reserva->turistas->first()->pago }}" class="img-fluid" alt="...">

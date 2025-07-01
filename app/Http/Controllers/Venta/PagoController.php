@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use App\Models\Reserva;
 use App\Models\Venta\Pago;
 use App\Models\Reserva\Resercliente;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class PagoController extends Controller
 {
@@ -28,54 +30,31 @@ class PagoController extends Controller
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        // Validar entrada
         $request->validate([
             'metodo' => 'required|string',
-            'monto' => 'required|numeric|min:1',
+            'monto' => 'required|numeric|min:0',
         ]);
     
-        // Obtener la reserva y el cliente asociado
         $rescli = Resercliente::find($request->rescli_id);
-    
         if (!$rescli) {
             return back()->with('error', 'Reserva no encontrada.');
         }
     
-        // Obtener la reserva asociada
         $reserva = Reserva::find($rescli->reserva_id);
-    
         if (!$reserva) {
             return back()->with('error', 'No se encontró la reserva asociada.');
         }
     
-        // Obtener el total pendiente actualizado
-        $totalPendiente = $reserva->total - $rescli->pagado;
-    
-        // Verificar si aún hay saldo pendiente
-        if ($totalPendiente <= 0) {
-            return back()->with('error', 'No hay saldo pendiente para esta reserva.');
-        }
-    
-        // Verificar que el monto no exceda el saldo pendiente
-        if ($request->monto > $totalPendiente) {
-            return back()->with('error', 'El monto ingresado excede el saldo pendiente.');
-        }
-    
-        // Obtener la tasa de conversión desde la base de datos
-        $tasaConversion = $this->obtenerTasaConversion($request->metodo) ?? 1; // Asegurar que sea 1 si no hay tasa
-    
-        // Calcular conversión y comisiones
-        $conversion = $request->monto * $tasaConversion;
+        // Tasa y comisión
+        $tasaConversion = $this->obtenerTasaConversion($request->metodo) ?? 1;
         $comision = $this->calcularComision($request->metodo) ?? 0;
+        $conversion = $request->monto * $tasaConversion;
         $totalPago = $conversion + $comision;
     
-        // Crear el pago
-        $pago = Pago::create([
+        // Registro del pago
+        Pago::create([
             'codigo' => uniqid(),
             'reserva_id' => $reserva->id,
             'rescli_id' => $rescli->id,
@@ -88,55 +67,50 @@ class PagoController extends Controller
             'estatus' => '1',
         ]);
     
-        // Actualizar monto pagado del cliente
-        $rescli->pagado += $request->monto;
+        $rescli->pagado += $conversion;
         $rescli->save();
     
-        // Recalcular el total pendiente después del pago
-        $nuevoSaldoPendiente = $reserva->total - $rescli->pagado;
+        $reserva->estado = '2';
+        $reserva->save();
     
-        // Verificar si el pago cubre el total pendiente y actualizar el estado
-        if ($nuevoSaldoPendiente >= 0) {
-            $reserva->estado = '2'; // Si estado es VARCHAR
-            $reserva->save();
-        }
-    
-        // Obtener la lista de turistas adicionales (excluyendo al principal)
-        $touristasAdicionales = Resercliente::where('reserva_id', $reserva->id)
-            ->where('esPrincipal', false) // Solo los adicionales
-            ->get();
+        $pdfPath = $this->generarResumenReservaPDF($reserva, $rescli);
 
-        $linksTuristas = [];
-
-        foreach ($touristasAdicionales as $turista) {
-            $linksTuristas[] = [
-                'nombre' => $turista->nombres,
-                'apellido' => $turista->apellidos,
-                'link' => url('/ventas/resclis/user/' . $turista->id)
+        $turistasAdicionales = Resercliente::where('reserva_id', $reserva->id)
+                ->where('id', '!=', $rescli->id) // excluir al principal
+                ->whereNull('nombres') // o el campo que usas para determinar si está incompleto
+                ->get()
+                ->map(function ($turista) {
+            return [
+                'id' => $turista->id,
+                'link' => route('venresclisuser', $turista->id), // ruta al formulario de edición para completar
             ];
-        }
-
-        // 🔹 Enviar correo de confirmación de pago
+        })->toArray();
+    
         $data = [
             'nombre' => $rescli->nombre,
             'apellidos' => $rescli->apellido,
             'email' => $rescli->correo,
             'codigo_reserva' => $reserva->codigo,
             'monto_pagado' => number_format($request->monto, 2, '.', ''),
-            'saldo_pendiente' => number_format($nuevoSaldoPendiente, 2, '.', ''),
-            'fecha_reserva' => $reserva->fecha_reserva,
+            'total' => $rescli->total,
+            'fecha_reserva' => $reserva->fecha,
             'cantidad_personas' => $reserva->can_per,
             'estado' => 'Confirmada',
             'tour_id' => $reserva->id,
-            'turistas_adicionales' => $linksTuristas, // Enviar los links
+            'turistas_adicionales' => $turistasAdicionales,
+            'pagina' => $request->pagina,
         ];
-
-        // Enviar el correo
-        Mail::to($rescli->correo)->send(new ReservaConfirmada($data));
-        return redirect('ventas/reservas/' . $request->reserva_id)
+    
+        try {
+            Mail::to($rescli->correo)->send(new ReservaConfirmada($data, $pdfPath));
+        } catch (\Exception $e) {
+            \Log::error('Error al enviar correo de confirmación: ' . $e->getMessage());
+        }
+    
+        return redirect('ventas/reservas/' . $reserva->id)
             ->with('success', 'Pago registrado exitosamente y correo enviado.');
     }
-
+    
     /**
      * Obtener la tasa de conversión de la divisa seleccionada desde la base de datos.
      */
@@ -161,6 +135,70 @@ class PagoController extends Controller
         // Si la comisión es mayor o igual a 1, asumimos que es un monto fijo
         return $cobro->comision;
     }
+
+    private function generarResumenReservaPDF($reserva, $cliente)
+    {
+        // Decodificar o usar directamente si ya es array
+        $habitacionesRaw = is_string($cliente->habitaciones) ? json_decode($cliente->habitaciones, true) : ($cliente->habitaciones ?? []);
+        $ticketsRaw = is_string($cliente->tickets) ? json_decode($cliente->tickets, true) : ($cliente->tickets ?? []);
+        $accesoriosRaw = is_string($cliente->accesorios) ? json_decode($cliente->accesorios, true) : ($cliente->accesorios ?? []);
+        $serviciosRaw = is_string($cliente->servicios) ? json_decode($cliente->servicios, true) : ($cliente->servicios ?? []);
+    
+        // Habitaciones con hotel
+        $habitaciones = collect($habitacionesRaw)->map(function ($item) {
+            $habit = \App\Models\Servicio\Habitacion::with('hotel')->find($item['id'] ?? 0);
+            return [
+                'hotel' => $habit?->hotel?->titulo ?? 'Hotel no especificado',
+                'name'  => $item['name'] ?? 'Habitación',
+                'price' => $item['price'] ?? 0,
+            ];
+        });
+    
+        // Resto como colecciones limpias
+        $tickets    = collect($ticketsRaw ?? []);
+        $accesorios = collect($accesoriosRaw ?? []);
+        $servicios  = collect($serviciosRaw ?? []);
+    
+        // Alergias y alimentación
+        $alergias = collect();
+        $alimentos = collect();
+    
+        $alergiaIds = is_string($cliente->alergias) ? json_decode($cliente->alergias, true) : ($cliente->alergias ?? []);
+        $alimentacionIds = is_string($cliente->alimentacion) ? json_decode($cliente->alimentacion, true) : ($cliente->alimentacion ?? []);
+    
+        if (is_array($alergiaIds) && !empty($alergiaIds)) {
+            $alergias = \App\Models\Configuracion\Alergia::whereIn('id', $alergiaIds)->get();
+        }
+    
+        if (is_array($alimentacionIds) && !empty($alimentacionIds)) {
+            $alimentos = \App\Models\Configuracion\Alimentacion::whereIn('id', $alimentacionIds)->get();
+        }
+    
+        // Generar PDF
+        $pdf = Pdf::loadView('pdf.reserva', compact(
+            'reserva',
+            'cliente',
+            'habitaciones',
+            'tickets',
+            'accesorios',
+            'servicios',
+            'alergias',
+            'alimentos'
+        ));
+    
+        // Guardar en ruta definida
+        $folderPath = public_path('reservas');
+        if (!file_exists($folderPath)) {
+            mkdir($folderPath, 0755, true); // Crea la carpeta si no existe
+        }
+
+        $pdfPath = $folderPath . '/resumen_' . $reserva->codigo . '.pdf';
+        $pdf->save($pdfPath);
+        
+    
+        return $pdfPath;
+    }
+    
 
     /**
      * Display the specified resource.

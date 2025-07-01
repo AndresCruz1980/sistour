@@ -22,141 +22,6 @@
         @import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css);
         @import url('https://fonts.googleapis.com/css?family=Roboto');
 
-        .uploader {
-        display: block;
-        clear: both;
-        margin: 0 auto;
-        width: 100%;
-
-        #file-drag {
-            float: left;
-            clear: both;
-            width: 100%;
-            padding: 2rem 1.5rem;
-            text-align: center;
-            background: #fff;
-            border-radius: 7px;
-            border: 3px solid #eee;
-            transition: all .2s ease;
-            user-select: none;
-
-            &:hover {
-            border-color: $theme;
-            }
-            &.hover {
-            border: 3px solid $theme;
-            box-shadow: inset 0 0 0 6px #eee;
-            
-            #start {
-                i.fa {
-                transform: scale(0.8);
-                opacity: 0.3;
-                }
-            }
-            }
-        }
-
-        #start {
-            float: left;
-            clear: both;
-            width: 100%;
-            &.hidden {
-            display: none;
-            }
-            i.fa {
-            font-size: 50px;
-            margin-bottom: 1rem;
-            transition: all .2s ease-in-out;
-            }
-        }
-        #response {
-            float: left;
-            clear: both;
-            width: 100%;
-            &.hidden {
-            display: none;
-            }
-            #messages {
-            margin-bottom: .5rem;
-            }
-        }
-
-        #file-image {
-            display: inline;
-            margin: 0 auto .5rem auto;
-            width: auto;
-            height: auto;
-            max-width: 180px;
-            &.hidden {
-            display: none;
-            }
-        }
-        
-        #notimage {
-            display: block;
-            float: left;
-            clear: both;
-            width: 100%;
-            &.hidden {
-            display: none;
-            }
-        }
-
-        progress,
-        .progress {
-            // appearance: none;
-            display: inline;
-            clear: both;
-            margin: 0 auto;
-            width: 100%;
-            max-width: 180px;
-            height: 8px;
-            border: 0;
-            border-radius: 4px;
-            background-color: #eee;
-            overflow: hidden;
-        }
-
-        .progress[value]::-webkit-progress-bar {
-            border-radius: 4px;
-            background-color: #eee;
-        }
-
-        .progress[value]::-webkit-progress-value {
-            background: linear-gradient(to right, darken($theme,8%) 0%, $theme 50%);
-            border-radius: 4px; 
-        }
-        .progress[value]::-moz-progress-bar {
-            background: linear-gradient(to right, darken($theme,8%) 0%, $theme 50%);
-            border-radius: 4px; 
-        }
-
-        input[type="file"] {
-            display: none;
-        }
-        .btn {
-            display: inline-block;
-            margin: .5rem .5rem 1rem .5rem;
-            clear: both;
-            font-family: inherit;
-            font-weight: 700;
-            font-size: 14px;
-            text-decoration: none;
-            text-transform: initial;
-            border: none;
-            border-radius: .2rem;
-            outline: none;
-            padding: 0 1rem;
-            height: 36px;
-            line-height: 36px;
-            color: #fff;
-            transition: all 0.2s ease-in-out;
-            box-sizing: border-box;
-            background: $theme;
-            border-color: $theme;
-            cursor: pointer;
-        }
-        }
         .hidden {
             display: none;
         }
@@ -166,998 +31,405 @@
         .tab-pane .form-check-label span {
             float: right;
         }
+        .uploader {
+            #file-drag {
+                background: #f9f9f9;
+                border: 2px dashed #ccc;
+                padding: 2rem;
+                text-align: center;
+                border-radius: 10px;
+                transition: 0.3s ease-in-out;
+
+                &.hover {
+                    border-color: #007bff;
+                    background: #eef7ff;
+                }
+            }
+
+            #preview-container {
+                margin-bottom: 1rem;
+
+                img#file-image {
+                    max-width: 160px;
+                    max-height: 160px;
+                    object-fit: cover;
+                    display: block;
+                    margin: 0 auto;
+                    border-radius: 6px;
+
+                    &.hidden {
+                        display: none;
+                    }
+                }
+
+                iframe#pdf-preview {
+                    width: 100%;
+                    height: 300px;
+                    border: none;
+
+                    &.hidden {
+                        display: none;
+                    }
+                }
+            }
+
+            input[type="file"] {
+                display: none;
+            }
+
+            #file-info {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .progress {
+                width: 100%;
+                max-width: 180px;
+                height: 8px;
+                border-radius: 4px;
+                margin: 1rem auto;
+                display: block;
+            }
+        }
+
+
     </style>
 @endsection
 
 @section('content')
     <link href="{{ asset('assets/plugins/bs-stepper/css/bs-stepper.css') }}" rel="stylesheet" />
-    
-    <form action="{{ route('venreservas.store') }}" class="uploader" method="POST" id="file-upload-form" enctype="multipart/form-data">
-        @csrf
+    <div class="row">
+        <div class="col-md-7">
 
-        @php
-            use App\Models\Servicio\Hotel;
-            use App\Models\Servicio\Ticket;
-            use App\Models\Servicio\Turista;
-            use App\Models\Servicio\Accesorio;
-        @endphp
+            <div class="card">
+                <div class="card border-primary mb-0">
+                    <form action="{{ route('venreservas.store') }}" method="POST" id="file-upload-form" enctype="multipart/form-data">
+                        @csrf
 
-        @foreach($tours as $tour)
-            @if($tour->id == $_GET['tour_id'])
-                <?php
-                    $ticket_ids = json_decode($tour->tickets, true) ?? [];
-                    $accesorio_ids = json_decode($tour->accesorios, true) ?? [];
-                    $turista_ids = json_decode($tour->turistas, true) ?? [];
-                    $hotel_ids = array_merge(...json_decode($tour->hoteles, true) ?? []);
+                        {{-- Datos necesarios --}}
+                        <input type="hidden" id="hor_lim" name="hor_lim" value="{{ $tour->hor_lim }}">
+                        <input type="hidden" id="max_per" name="max_per" value="{{ $tour->max_per }}">
+                        <input type="hidden" id="pre_tot" name="pre_tot" value="{{ $tour->pre_tot }}">
+                        <input type="hidden" id="pre_uni" name="pre_uni" value="{{ $tour->pre_uni }}">
+                        <input type="hidden" id="tour_id" name="tour_id" value="{{ $tour->id }}">
+                        <input type="hidden" id="estatus" name="estatus" value="1">
 
-                    // Filtrar solo los elementos necesarios
-                    $tickets = Ticket::whereIn('id', $ticket_ids)->get();
-                    $accesorios = Accesorio::whereIn('id', $accesorio_ids)->get();
-                    $turistas = Turista::whereIn('id', $turista_ids)->get();
-                    $hoteles = Hotel::whereIn('id', $hotel_ids)->with('habitaciones')->get();
-
-                    $hotelesSeleccionados = json_decode($tour->hoteles, true);
-                ?>
-
-                <div class="row">
-                    <div class="col-md-2"></div>
-
-                    <div class="col-md-5">
-                        <div class="card">
-                            <div class="card border-primary mb-0">
-                                <div class="card-body pt-5 pb-5 p-4 fase" id="primera_fase">
-                                    @php
-                                        $originalDate = $tour->created_at;
-                                        $newDate = date("m/d/Y", strtotime($originalDate));
-                                    @endphp
-
-                                    <input type="hidden" id="hor_lim" name="hor_lim" value="{{ $tour->hor_lim }}" />
-                                    <input type="hidden" id="max_per" name="max_per" value="{{ $tour->max_per }}" />
-                                    <input type="hidden" id="pre_tot" name="pre_tot" value="{{ $tour->pre_tot }}" />
-                                    <input type="hidden" id="pre_uni" name="pre_uni" value="{{ $tour->pre_uni }}" />
-                                    <input type="hidden" id="created_at" name="created_at" value="{{ $newDate }}" />
-                                    <input type="hidden" id="tour_id" name="tour_id" value="{{ $tour->id }}" />
-                                    <input type="hidden" id="estatus" name="estatus" value="1" />
-
-                                    <h5 class="card-title text-black text-center"><b>{{ $tour->titulo }}</b></h5>
-
-                                    <dl class="row">
-                                        <dt class="col-sm-3">Precio</dt>
-                                        <dd class="col-sm-9 text-right">{{ 'Bs. '.number_format($tour->pre_uni, 2, '.', '') }}</dd>
-                                    </dl>
-                                    
-                                    <hr>
-
-                                    <dl class="row">
-                                        <dt class="col-sm-3">Personas</dt>
-                                        <dd class="col-sm-9 text-right">
-                                            <div class="input-group input-spinner justify-content-end">
-                                                <button class="btn btn-white" type="button" id="button-minus"> - </button>
-                                                    <input type="text" id="cantper" name="cantper" class="form-control form_cantidad text-center" value="1">
-                                                <button class="btn btn-white" type="button" id="button-plus"> + </button>
-                                            </div>
-                                        </dd>
-                                    </dl>
-
-                                    <p class="card-text">{{ $tour->descripcion }}</p>
-
-                                    <hr>
-
-                                    <dl class="row">
-                                        <dt class="col-sm-3">Fecha del tour</dt>
-                                        <dd class="col-sm-9 text-right">
-                                            <div class="input-group input-spinner justify-content-end">
-                                                <input type="date" class="form-control form_date text-center" id="fecha_limite" name="fecha_limite" />
-                                            </div>
-                                        </dd>
-                                    </dl>
-
-                                    <hr>
-
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" value="1" type="checkbox" role="switch" id="tprivado" />
-                                        <label class="form-check-label" for="tprivado">Deseas privado</label>
-                                    </div>
-
-                                    <hr>
-
-                                    <div class="d-flex align-items-center gap-2">
-                                        <!-- a href="javascript:;" class="btn btn-danger regresar col-md-6" data-prev=""><i class="bx bx-microphone"></i>Cancelar</a -->
-                                        <a href="javascript:;" class="btn btn-primary continuar col-md-12" data-next="segunda_fase">Continuar <i class="fadeIn animated bx bx-arrow-to-right"></i></a>
-                                    </div>
-                                </div>
-
-                                <div class="card-body pt-5 pb-5 p-4 fase" id="segunda_fase" style="display: none;">
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label for="nombres" class="form-label">Nombres <span>*</span></label>
-                                            <input type="text" class="form-control" id="nombres" name="nombres" required />
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label for="apellidos" class="form-label">Apellidos <span>*</span></label>
-                                            <input type="text" class="form-control" id="apellidos" name="apellidos" required />
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label for="edad" class="form-label">Edad <span>*</span></label>
-                                            <input type="number" class="form-control" id="edad" name="edad" required />
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label for="nacionalidad" class="form-label">Nacionalidad <span>*</span></label>
-                                            <select class="form-select" id="nacionalidad" name="nacionalidad" type="select">
-                                                <option value="">Seleccionar</option>
-                                                @foreach($countries as $countrie)
-                                                    <option value="{{ $countrie->iso }}">{{ $countrie->nombre }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label for="documento" class="form-label">Número de documento <span>*</span></label>
-                                            <input type="number" class="form-control" id="documento" name="documento" required />
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label for="celular" class="form-label">Celular <span>*</span></label>
-                                            <input type="number" class="form-control" id="celular" name="celular" required />
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label for="sexo" class="form-label">Sexo <span>*</span></label>
-                                            <select class="form-control" id="sexo" name="sexo" type="select" required>
-                                                <option value="">Seleccionar</option>
-                                                <option value="Hombre">Hombre</option>
-                                                <option value="Mujer">Mujer</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label for="email" class="form-label">Email <span>*</span></label>
-                                            <input type="email" class="form-control" id="email" name="email" required >
-                                        </div>
-
-                                        <div class="col-md-12">
-                                            <label for="alergias" class="form-label">Alergias</label>
-                                            <select class="form-select" id="alergias" name="alergias[]" type="select" data-placeholder="Seleccionar" multiple>
-                                                @foreach($alergias as $alergia)
-                                                    <option value="{{ $alergia->id }}">{{ $alergia->titulo }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-12">
-                                            <label for="alimentacion" class="form-label">Tipo alimentación</label>
-                                            <select class="form-select" id="alimentacion" name="alimentacion[]" type="select" data-placeholder="Seleccionar" multiple>
-                                                @foreach($alimentos as $alimento)
-                                                    <option value="{{ $alimento->id }}">{{ $alimento->titulo }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-12">
-                                            <label for="nota" class="form-label">Nota adicional</label>
-                                            <input type="text" class="form-control" id="nota" name="nota" />
-                                        </div>
-
-                                        <div class="col-md-12">
-                                            <label for="alimentacion" class="form-label">Es importante subir una imagen del documento de identidad para su seguridad y la nuestra. <strong>(campo requerido *)</strong></label>
-                                            <input class="form-control form-control-solid" id="file-upload" name="file" type="file" accept=".pdf, .doc, .docx, image/*" required />
-
-                                            <label for="file-upload" id="file-drag">
-                                                <img id="file-image" src="#" alt="Preview" class="hidden">
-                                                <iframe id="pdf-preview" style="display: none;" class="hidden" width="100%" height="500px"></iframe>
-                                                
-                                                <div id="start">
-                                                    <i class="fa fa-download" aria-hidden="true"></i>
-                                                    <div>Selecciona el archivo a cargar</div>
-                                                    <div id="notimage" class="hidden">Selecciona una imagen</div>
-                                                    <span id="file-upload-btn" class="btn btn-primary">Selecciona un archivo</span>
-                                                </div>
-
-                                                <div id="response" class="hidden">
-                                                    <div id="messages"></div>
-                                                    
-                                                    <progress class="progress" id="file-progress" value="0">
-                                                        <span>0</span>%
-                                                    </progress>
-                                                </div>
-                                            </label>
-                                        </div>
-
-                                        <div class="col-md-12">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <a href="javascript:regresar2();" class="btn btn-danger regresar2 col-md-6" data-prev="primera_fase"><i class="fadeIn animated bx bx-arrow-to-left"></i>Regresar</a>
-                                                <a href="javascript:continuar2();" class="btn btn-primary continuar2 col-md-6" data-next="tercera_fase">Continuar <i class="fadeIn animated bx bx-arrow-to-right"></i></a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="card-body pt-5 pb-5 p-4 fase" id="tercera_fase" style="display: none;">
-                                    <ul class="nav nav-tabs nav-primary" role="tablist">
-                                        <li class="nav-item" role="presentation">
-                                            <a class="nav-link active" data-bs-toggle="tab" href="#tourtickets" role="tab" aria-selected="true">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="tab-title">Tickets</div>
-                                                </div>
-                                            </a>
-                                        </li>
-
-                                        <li class="nav-item" role="presentation">
-                                            <a class="nav-link" data-bs-toggle="tab" href="#tourhoteles" role="tab" aria-selected="false" tabindex="-1">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="tab-title">Hoteles</div>
-                                                </div>
-                                            </a>
-                                        </li>
-
-                                        <li class="nav-item" role="presentation">
-                                            <a class="nav-link" data-bs-toggle="tab" href="#touraccesorios" role="tab" aria-selected="false" tabindex="-1">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="tab-title">Accesorios</div>
-                                                </div>
-                                            </a>
-                                        </li>
-
-                                        <li class="nav-item" role="presentation">
-                                            <a class="nav-link" data-bs-toggle="tab" href="#tourservicios" role="tab" aria-selected="false" tabindex="-1">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="tab-title">Servicios</div>
-                                                </div>
-                                            </a>
-                                        </li>
-                                    </ul>
-
-                                    <div class="tab-content py-3">
-                                        <div class="tab-pane fade show active" id="tourtickets" role="tabpanel">
-                                            <div class="col-md-12">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" id="select_all_tickets">
-                                                    <label class="form-check-label" for="select_all_tickets">
-                                                        <strong>Seleccionar todos</strong>
-                                                    </label>
-                                                </div>                                                
-                                                @foreach($tickets as $ticket)
-                                                    <div class="form-check">
-                                                        <input class="form-check-input ticket-checkbox" type="checkbox" name="ticket_id[]" value="{{ $ticket->id }}" id="ticket_{{ $ticket->id }}" 
-                                                            data-name="{{ $ticket->titulo }}"
-                                                            data-nac="{{ number_format($ticket->nacionales, 2, '.', '') }}"
-                                                            data-ext="{{ number_format($ticket->extranjeros, 2, '.', '') }}">
-                                                        <label class="form-check-label" for="ticket_{{ $ticket->id }}">
-                                                            {{ $ticket->titulo }}
-                                                            <span class="seccion-mexico hidden">Bs. {{ number_format($ticket->nacionales, 2, '.', '') }}</span>
-                                                            <span class="seccion-otros hidden">Bs. {{ number_format($ticket->extranjeros, 2, '.', '') }}</span>
-                                                        </label>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-
-                                        <div class="tab-pane fade" id="tourhoteles" role="tabpanel">
-                                            <?php
-                                                $hotelesSeleccionados = json_decode($tour->hoteles, true);
-                                            ?>
-
-                                            @foreach($hotelesSeleccionados as $key => $hotelIds)
-                                                <div class="row g-3">
-                                                    <div class="col-md-12 form-check">
-                                                        <label class="form-label" for="noche_{{ $key }}">
-                                                            Dia {{ $key }}
-                                                        </label>
-
-                                                        @foreach ($hoteles as $hotel)
-                                                            @if(in_array($hotel->id, $hotelIds)) 
-                                                                <div class="form-check">
-                                                                    <!-- Checkbox para el hotel -->
-                                                                    <input class="form-check-input" style="display: none;" type="checkbox" value="{{ $hotel->id }}" id="hotel_{{ $hotel->id }}_{{ $key }}" />
-                                                                    <label class="form-check-label" for="hotele_{{ $hotel->id }}_{{ $key }}">
-                                                                        {{ $hotel->titulo }}
-                                                                    </label>
-
-                                                                    @foreach($habitaciones->where('hotel_id', $hotel->id) as $habitacion)
-                                                                        <div class="form-check form_habi{{ $habitacion->id }}{{ $key }}">
-                                                                            <!-- ID único para los checkbox buttons y name basado en el día para selección única -->
-                                                                            <input class="form-check-input habitacion-checkbox" type="checkbox" value="{{ $habitacion->id }}"
-                                                                                id="form_habi_{{ $hotel->id }}_{{ $habitacion->id }}_dia{{ $key }}"
-                                                                                name="habitacion_dia_{{ $key }}"
-                                                                                data-name="{{ $habitacion->titulo }}"
-                                                                                data-hnac="{{ number_format($habitacion->nacionales, 2, '.', '') }}"
-                                                                                data-hext="{{ number_format($habitacion->extranjeros, 2, '.', '') }}"
-                                                                                data-tit="{{ $hotel->titulo }}" />
-
-                                                                            <label class="form-check-label" for="form_habi_{{ $hotel->id }}_{{ $habitacion->id }}_dia{{ $key }}">
-                                                                                {{ $habitacion->titulo }}
-                                                                                <span class="seccion-mexico hidden">Bs. {{ number_format($habitacion->nacionales, 2, '.', '') }}</span>
-                                                                                <span class="seccion-otros hidden">Bs. {{ number_format($habitacion->extranjeros, 2, '.', '') }}</span>
-                                                                            </label>
-                                                                        </div>
-                                                                    @endforeach
-                                                                </div>
-                                                            @endif
-                                                        @endforeach
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        </div>
-
-                                        <div class="tab-pane fade" id="touraccesorios" role="tabpanel">
-                                            <div class="col-md-12">
-                                                @foreach($accesorios as $accesorio)
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" name="accesorio_id[]" value="{{ $accesorio->id }}" id="accesorio_{{ $accesorio->id }}" 
-                                                            data-aname="{{ $accesorio->titulo }}"
-                                                            data-aprecio="{{ number_format($accesorio->venta, 2, '.', '') }}" />
-                                                        
-                                                        <label class="form-check-label" for="accesorio_{{ $accesorio->id }}">
-                                                            {{ $accesorio->titulo }} <span>{{ 'Bs. '.number_format($accesorio->venta, 2, '.', '') }}</span>
-                                                        </label>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-
-                                        <div class="tab-pane fade" id="tourservicios" role="tabpanel">
-                                            <div class="col-md-12">
-                                                @foreach($turistas as $turista)
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" name="servicio_id[]" value="{{ $turista->id }}" id="turista_{{ $turista->id }}" 
-                                                            data-sname="{{ $turista->titulo }}"
-                                                            data-sprecio="{{ number_format($turista->venta, 2, '.', '') }}" />
-                                                        
-                                                        <label class="form-check-label" for="turista_{{ $turista->id }}">
-                                                            {{ $turista->titulo }} <span>{{ 'Bs. '.number_format($turista->venta, 2, '.', '') }}</span>
-                                                        </label>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="row g-3">
-                                        <div class="col-md-12">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <a href="javascript:;" class="btn btn-danger regresar col-md-6" data-prev="segunda_fase"><i class="fadeIn animated bx bx-arrow-to-left"></i>Regresar</a>
-                                                <button type="submit" class="btn btn-primary continuar col-md-6">Reservar <i class="fadeIn animated bx bx-arrow-to-right"></i></button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-5">
-                        <div class="card">
-                            <div class="card border-primary mb-0">
-                                <div class="card-body pt-5 pb-5 p-4">
-                                    <dl class="row col-md-12" id="porpre">
-                                        <dt class="col-sm-5">Precio / persona</dt>
-                                        <dd class="col-sm-7 text-right" id="precio_count">
-                                            {{ 'Bs. '.number_format($tour->pre_uni, 2, '.', '') }}
-                                        </dd>
-
-                                        <dt class="col-sm-5">Cantidad de persona</dt>
-                                        <dd class="col-sm-7 text-right" id="cant_pers"></dd>
-                                    </dl>
-                                    
-                                    <dl class="row col-md-12" id="totpre" style="display: none;">
-                                        <dt class="col-sm-5">Precio</dt>
-                                        <dd class="col-sm-7 text-right" id="max_precio"></dd>
-
-                                        <dt class="col-sm-5">Cantidad de persona</dt>
-                                        <dd class="col-sm-7 text-right" id="max_personas"></dd>
-                                    </dl>
-
-                                    <dl class="col-md-12 row tickets_cont" id="tickets_cont" style="display: none;">
-                                        <dt class="col-sm-12">
-                                            <span class="btn btn-inverse-success mb-3 col-md-12">Tickets</span>
-                                        </dt>
-
-                                        <dt class="col-sm-5" id="tic_name"></dt>    
-                                        <dd class="col-sm-7 text-right" id="tic_pre"></dd>
-                                    </dl>
-
-                                    <dl class="col-md-12 row habitaciones_cont" id="habitaciones_cont" style="display: none;">
-                                        <dt class="col-sm-12">
-                                            <span class="btn btn-inverse-success mb-3 col-md-12">Habitaciones</span>
-                                        </dt>
-
-                                        <dt class="col-sm-9" id="hab_name"></dt>
-                                        <dd class="col-sm-3 text-right" id="hab_pre"></dd>
-                                    </dl>
-
-                                    <dl class="col-md-12 row accesorios_cont" id="accesorios_cont" style="display: none;">
-                                        <dt class="col-sm-12">
-                                            <span class="btn btn-inverse-success mb-3 col-md-12">Accesorios</span>
-                                        </dt>
-
-                                        <dt class="col-sm-5" id="acc_name"></dt>
-                                        <dd class="col-sm-7 text-right" id="acc_pre"></dd>
-                                    </dl>
-
-                                    <dl class="col-md-12 row servicios_cont" id="servicios_cont" style="display: none;">
-                                        <dt class="col-sm-12">
-                                            <span class="btn btn-inverse-success mb-3 col-md-12">Servicios</span>
-                                        </dt>
-
-                                        <dt class="col-sm-5" id="ser_name"></dt>
-                                        <dd class="col-sm-7 text-right" id="ser_pre"></dd>
-                                    </dl>
-
-                                    <dl class="row col-md-12">
-                                        <dt class="col-sm-3"></dt>
-                                        <dd class="col-sm-9 text-right">
-                                            <b>Subtotal:</b> <span id="tour_Sbt">{{ 'Bs. '.number_format($tour->pre_uni, 2, '.', '') }}</span>
-                                        </dd>
-                                    </dl>
-
-                                    <input type="hidden" name="tickets_seleccionados" id="tickets_seleccionados" value="">
-                                    <input type="hidden" name="habitaciones_seleccionadas" id="habitaciones_seleccionadas" value="">
-                                    <input type="hidden" name="accesorios_seleccionados" id="accesorios_seleccionados" value="">
-                                    <input type="hidden" name="servicios_seleccionados" id="servicios_seleccionados" value="">
-                                    <input type="hidden" name="tour_total" id="tour_total" value="">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        <x-reserva.fases.primer-fase :tour="$tour" />
+                        <x-reserva.fases.segunda-fase :countries="$countries" :alergias="$alergias" :alimentos="$alimentos" />
+                        <x-reserva.fases.tercera-fase
+                        :tour="$tour"
+                        :tickets="$tickets"
+                        :hoteles="$hoteles"
+                        :habitaciones="$habitaciones"
+                        :accesorios="$accesorios"
+                        :turistas="$turistas"
+                        />                
+                        <x-reserva.fases.cuarta-fase :links="$links" :onlines="$onlines" :qrs="$qrs" />
+                    
+                    </form>
                 </div>
-            @endif
-        @endforeach
-    </form>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <x-reserva.resumen-final :tour="$tour" />
+        </div>
+    </div>
+
 @endsection
+
 
 @section('footer_scripts')
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const buttonMinus = document.getElementById("button-minus");
-            const buttonPlus = document.getElementById("button-plus");
-            const cantPerInput = document.getElementById("cantper");
-            const preUni = parseFloat(document.getElementById("pre_uni").value);
-            const preTot = parseFloat(document.getElementById("pre_tot").value);
-            const maxPer = parseFloat(document.getElementById("max_per").value);
-            const tourSbt = document.getElementById("tour_Sbt");
-            const tourTotal = document.getElementById("tour_total");
-            const tPrivadoCheckbox = document.getElementById("tprivado");
-            const porPreSection = document.getElementById("porpre");
-            const totPreSection = document.getElementById("totpre");
-            const maxPrecio = document.getElementById("max_precio");
-            const maxPersonas = document.getElementById("max_personas");
-            const cantPersDisplay = document.getElementById("cant_pers");
-            const fechaLimiteInput = document.getElementById("fecha_limite");
+       document.addEventListener("DOMContentLoaded", function () {
+            const $ = (id) => document.getElementById(id);
 
-            const createdAt = document.getElementById("created_at").value;
-            const horLim = parseInt(document.getElementById("hor_lim").value, 10);
-            const nacionalidadSelect = document.getElementById("nacionalidad");
+            // Inputs generales
+            const cantPerInput = $("cantper");
+            const preUni = parseFloat($("pre_uni").value);
+            const preTot = parseFloat($("pre_tot").value);
+            const maxPer = parseFloat($("max_per").value);
+            const horLim = parseInt($("hor_lim").value);
+            const tourTotal = $("tour_total");
+            const tourSbt = $("tour_Sbt");
 
-            const ticketsCont = document.getElementById("tickets_cont");
-            const ticName = document.getElementById("tic_name");
-            const ticPre = document.getElementById("tic_pre");
+            // Secciones y botones
+            const porPre = $("porpre"), totPre = $("totpre");
+            const maxPrecio = $("max_precio"), maxPersonas = $("max_personas");
+            const cantPers = $("cant_pers");
+            const tPrivado = $("tprivado");
+            const btnMinus = $("button-minus"), btnPlus = $("button-plus");
 
-            const accesoriosCont = document.getElementById("accesorios_cont");
-            const accName = document.getElementById("acc_name");
-            const accPre = document.getElementById("acc_pre");
+            // Fecha límite
+            const fechaLimiteInput = $("fecha_limite");
+            const setFechaMinima = () => {
+                const ahora = new Date();
+                ahora.setHours(ahora.getHours() + horLim);
+                const fecha = ahora.toISOString().split("T")[0];
+                fechaLimiteInput.min = fecha;
+                fechaLimiteInput.value = fecha;
+            };
 
-            const serviciosCont = document.getElementById("servicios_cont");
-            const serName = document.getElementById("ser_name");
-            const serPre = document.getElementById("ser_pre");
-
-            const habitacionesCont = document.getElementById("habitaciones_cont");
-            const habName = document.getElementById("hab_name");
-            const habPre = document.getElementById("hab_pre");
-
-            const checkboxesTickets = document.querySelectorAll("input[type='checkbox'][id^='ticket_']");
-            const checkboxesAccesorios = document.querySelectorAll("input[type='checkbox'][id^='accesorio_']");
-            const checkboxesServicios = document.querySelectorAll("input[type='checkbox'][id^='turista_']");
-            const checkboxesHabitaciones = document.querySelectorAll("input[type='checkbox'][id^='form_habi_']");
-
-            let totalTickets = 0;
-            let totalAccesorios = 0;
-            let totalServicios = 0;
-            let totalHabitaciones = 0;
-
-            // Selecciona todos los checkboxes de tickets al cambiar el checkbox de "Seleccionar todos"
-            document.getElementById('select_all_tickets').addEventListener('change', function() {
-                const checkboxes = document.querySelectorAll('.ticket-checkbox');
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = this.checked;
-                });
-                updateCheckboxTotal();
+            // Nacionalidad
+            const nacionalidad = $("nacionalidad");
+            nacionalidad?.addEventListener("change", () => {
+                document.querySelectorAll(".seccion-mexico").forEach(e => e.classList.toggle("hidden", nacionalidad.value !== "BO"));
+                document.querySelectorAll(".seccion-otros").forEach(e => e.classList.toggle("hidden", nacionalidad.value === "BO"));
+                updateAllTotals();
             });
 
-            // Selecciona todos los checkboxes de habitaciones al cambiar el checkbox de "Seleccionar todos"
-            const habitacionCheckboxes = document.querySelectorAll(".habitacion-checkbox");
-            habitacionCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener("change", function() {
-                    const name = this.name;
-                    if (this.checked) {
-                        habitacionCheckboxes.forEach(otherCheckbox => {
-                            if (otherCheckbox !== this && otherCheckbox.name === name) {
-                                otherCheckbox.checked = false;
-                            }
-                        });
-                    }
-                });
-            });             
+            // Totales
+            let totals = {
+                tickets: 0,
+                accesorios: 0,
+                servicios: 0,
+                habitaciones: 0
+            };
 
-            // Función para manejar el cambio en el select de nacionalidad
-            function handleNacionalidadChange() {
-                const selectedValue = nacionalidadSelect.value;
-                const seccionesMexico = document.querySelectorAll(".seccion-mexico");
-                const seccionesOtros = document.querySelectorAll(".seccion-otros");
+            const selectors = {
+                tickets: { check: "[id^='ticket_']", cont: "tickets_cont", name: "tic_name", pre: "tic_pre", attr: ["name", "nac", "ext"] },
+                accesorios: { check: "[id^='accesorio_']", cont: "accesorios_cont", name: "acc_name", pre: "acc_pre", attr: ["aname", "aprecio"] },
+                servicios: { check: "[id^='turista_']", cont: "servicios_cont", name: "ser_name", pre: "ser_pre", attr: ["sname", "sprecio"] },
+                habitaciones: { check: "input[type='radio'][id^='form_habi_']", cont: "habitaciones_cont", name: "hab_name", pre: "hab_pre", attr: ["name", "hnac", "hext", "dia"] },
+            };
 
-                seccionesMexico.forEach(seccion => {
-                    seccion.classList.toggle("hidden", selectedValue !== "BO");
-                });
-                seccionesOtros.forEach(seccion => {
-                    seccion.classList.toggle("hidden", selectedValue === "BO");
-                });
-
-                // Recalcula el total de tickets al cambiar la nacionalidad
-                updateCheckboxTotal();
-            }
-
-            nacionalidadSelect.addEventListener("change", handleNacionalidadChange);
-
-            // Función para actualizar el total de los tickets seleccionados
-            function updateCheckboxTotal() {
-                totalTickets = 0;
-                let names = "";
-                let prices = "";
-
-                checkboxesTickets.forEach(checkbox => {
-                    if (checkbox.checked) {
-                        const price = parseFloat(nacionalidadSelect.value === "BO" ? checkbox.dataset.nac : checkbox.dataset.ext) || 0;
-                        totalTickets += price;
-
-                        names += `${checkbox.dataset.name}<br>`;
+            const updateGroupTotal = (type) => {
+                const group = selectors[type];
+                const items = document.querySelectorAll(group.check);
+                let total = 0;
+                let names = "", prices = "";
+                items.forEach(el => {
+                    if (el.checked) {
+                        const price = parseFloat(
+                            type === "tickets" || type === "habitaciones"
+                                ? nacionalidad.value === "BO" ? el.dataset[group.attr[1]] : el.dataset[group.attr[2]]
+                                : el.dataset[group.attr[1]]
+                        ) || 0;
+                        total += price;
+                        names += `${el.dataset[group.attr[0]]}<br>`;
                         prices += `Bs. ${price.toFixed(2)}<br>`;
                     }
                 });
-
-                if (totalTickets > 0) {
-                    ticketsCont.style.display = "inline-flex";
-                    ticName.innerHTML = names;
-                    ticPre.innerHTML = prices;
+                totals[type] = total;
+                const cont = $(group.cont);
+                if (total > 0) {
+                    cont.style.display = "inline-flex";
+                    $(group.name).innerHTML = names;
+                    $(group.pre).innerHTML = prices;
                 } else {
-                    ticketsCont.style.display = "none";
+                    cont.style.display = "none";
                 }
+            };
 
-                updateTotal(); // Llama a updateTotal() para actualizar el subtotal
-            }
+            const updateAllTotals = () => {
+                Object.keys(selectors).forEach(updateGroupTotal);
+                const base = parseInt(cantPerInput.value) || 1;
+                const subtotal = base * preUni;
+                const total = subtotal + Object.values(totals).reduce((a, b) => a + b, 0);
+                tourSbt.innerText = `Bs. ${total.toFixed(2)}`;
+                tourTotal.value = total.toFixed(2);
+                cantPers.innerText = `${base} ${base === 1 ? "persona" : "personas"}`;
+            };
 
-            // Función para actualizar el total de accesorios seleccionados
-            function updateAccessoryTotal() {
-                totalAccesorios = 0;
-                let accessoryNames = "";
-                let accessoryPrices = "";
-
-                checkboxesAccesorios.forEach(checkbox => {
-                    if (checkbox.checked) {
-                        const price = parseFloat(checkbox.dataset.aprecio) || 0;
-                        totalAccesorios += price;
-
-                        accessoryNames += `${checkbox.dataset.aname}<br>`;
-                        accessoryPrices += `Bs. ${price.toFixed(2)}<br>`;
-                    }
+            // Eventos de cambio
+            Object.keys(selectors).forEach(type => {
+                document.querySelectorAll(selectors[type].check).forEach(el => {
+                    el.addEventListener("change", () => {
+                        updateGroupTotal(type);
+                        updateAllTotals(); // <-- asegúrate de que esté presente aquí
+                        saveSelections();
+                    });
                 });
+            });
+            // Guardar selecciones como JSON
+            const saveSelections = () => {
+                const mapToJson = (selector, builderFn) =>
+                    JSON.stringify(
+                        Array.from(document.querySelectorAll(selector))
+                            .filter(el => el.checked)
+                            .map(builderFn)
+                    );
 
-                if (totalAccesorios > 0) {
-                    accesoriosCont.style.display = "inline-flex";
-                    accName.innerHTML = accessoryNames;
-                    accPre.innerHTML = accessoryPrices;
-                } else {
-                    accesoriosCont.style.display = "none";
-                }
+                $("tickets_seleccionados").value = mapToJson(selectors.tickets.check, el => ({
+                    id: el.value, name: el.dataset.name, price: parseFloat(nacionalidad.value === "BO" ? el.dataset.nac : el.dataset.ext)
+                }));
 
-                updateTotal();
-            }
+                $("accesorios_seleccionados").value = mapToJson(selectors.accesorios.check, el => ({
+                    id: el.value, name: el.dataset.aname, price: parseFloat(el.dataset.aprecio)
+                }));
 
-            // Función para actualizar el total de servicios seleccionados
-            function updateServicioTotal() {
-                totalServicios = 0;
-                let servicioNames = "";
-                let servicioPrices = "";
+                $("servicios_seleccionados").value = mapToJson(selectors.servicios.check, el => ({
+                    id: el.value, name: el.dataset.sname, price: parseFloat(el.dataset.sprecio)
+                }));
 
-                checkboxesServicios.forEach(checkbox => {
-                    if (checkbox.checked) {
-                        const price = parseFloat(checkbox.dataset.sprecio) || 0;
-                        totalServicios += price;
+                $("habitaciones_seleccionadas").value = mapToJson(selectors.habitaciones.check, el => ({
+                    id: el.value, name: el.dataset.name, price: parseFloat(nacionalidad.value === "BO" ? el.dataset.hnac : el.dataset.hext), dia: parseInt(el.dataset.dia)
+                }));
+            };
 
-                        servicioNames += `${checkbox.dataset.sname}<br>`;
-                        servicioPrices += `Bs. ${price.toFixed(2)}<br>`;
-                    }
-                });
-
-                if (totalServicios > 0) {
-                    serviciosCont.style.display = "inline-flex";
-                    serName.innerHTML = servicioNames;
-                    serPre.innerHTML = servicioPrices;
-                } else {
-                    serviciosCont.style.display = "none";
-                }
-
-                updateTotal(); // Llama a updateTotal() para actualizar el subtotal
-            }
-
-            // Función para actualizar el total de habitaciones seleccionadas
-            function updateHabitacionTotal() {
-                totalHabitaciones = 0;
-                let names = "";
-                let prices = "";
-
-                checkboxesHabitaciones.forEach(checkbox => {
-                    if (checkbox.checked) {
-                        const hotelName = checkbox.dataset.tit; // Asegúrate de usar el dataset.tit
-                        const roomName = checkbox.dataset.name;
-                        const price = parseFloat(nacionalidadSelect.value === "BO" ? checkbox.dataset.hnac : checkbox.dataset.hext) || 0;
-
-                        totalHabitaciones += price;
-
-                        names += `${hotelName}: ${roomName}<br>`;
-                        prices += `Bs. ${price.toFixed(2)}<br>`;
-                    }
-                });
-
-                if (totalHabitaciones > 0) {
-                    habitacionesCont.style.display = "inline-flex";
-                    habName.innerHTML = names;
-                    habPre.innerHTML = prices;
-                } else {
-                    habitacionesCont.style.display = "none";
-                }
-
-                updateTotal(); // Asegúrate de actualizar el total
-            }
-
-            // Función para calcular y actualizar el total acumulado en tourSbt
-            function updateTotal() {
-                const cantidad = parseInt(cantPerInput.value) || 0;
-                const subtotal = cantidad * preUni;
-                const totalSum = subtotal + totalTickets + totalAccesorios + totalServicios + totalHabitaciones; // Incluye totalHabitaciones
-
-                tourSbt.innerText = `Bs. ${totalSum.toFixed(2)}`;
-                tourTotal.value = `${totalSum.toFixed(2)}`;
-            }
-
-            // Eventos para los checkboxes de tickets y accesorios
-            checkboxesTickets.forEach(checkbox => checkbox.addEventListener("change", updateCheckboxTotal));
-            checkboxesAccesorios.forEach(checkbox => checkbox.addEventListener("change", updateAccessoryTotal));
-            checkboxesServicios.forEach(checkbox => checkbox.addEventListener("change", updateServicioTotal));
-            checkboxesHabitaciones.forEach(checkbox => checkbox.addEventListener("change", updateHabitacionTotal));
-
-            // Límite de fechas basado en createdAt y horLim
-            const createdAtDate = new Date(createdAt);
-            const fechaDisponible = new Date(createdAtDate);
-            fechaDisponible.setHours(fechaDisponible.getHours() + horLim);
-
-            // Configura la fecha mínima como la fecha disponible (días y horas añadidos)
-            fechaLimiteInput.min = fechaDisponible.toISOString().split("T")[0];
-
-            // Si la fecha mínima es mayor que la fecha actual, restringe la selección
-            const currentDate = new Date();
-            if (currentDate > fechaDisponible) {
-                fechaLimiteInput.value = fechaDisponible.toISOString().split("T")[0];
-            }
-
-            // Actualiza el subtotal en base a la cantidad seleccionada
-            function updateSubtotal() {
-                const cantidad = parseInt(cantPerInput.value) || 0;
-                const subtotal = cantidad * preUni;
-                tourSbt.innerText = `Bs. ${(subtotal + totalTickets + totalAccesorios).toFixed(2)}`;
-                tourTotal.value = `${(subtotal + totalTickets + totalAccesorios).toFixed(2)}`;
-                cantPersDisplay.innerText = `${cantidad} ${cantidad === 1 ? 'persona' : 'personas'}`;
-            }
-
-            // Eventos de los botones de cantidad
-            buttonPlus.addEventListener("click", function() {
-                let cantidad = parseInt(cantPerInput.value) || 1;
-                if (cantidad < maxPer) {
-                    cantidad++;
-                    cantPerInput.value = cantidad;
-                    updateSubtotal();
-                }
+            // Cantidad de personas
+            btnPlus?.addEventListener("click", () => {
+                let value = parseInt(cantPerInput.value) || 1;
+                if (value < maxPer) cantPerInput.value = ++value;
+                updateAllTotals();
             });
 
-            buttonMinus.addEventListener("click", function() {
-                let cantidad = parseInt(cantPerInput.value) || 1;
-                if (cantidad > 1) {
-                    cantidad--;
-                    cantPerInput.value = cantidad;
-                    updateSubtotal();
-                }
+            btnMinus?.addEventListener("click", () => {
+                let value = parseInt(cantPerInput.value) || 1;
+                if (value > 1) cantPerInput.value = --value;
+                updateAllTotals();
             });
 
-            // Modo privado
-            tPrivadoCheckbox.addEventListener("change", function() {
-                if (tPrivadoCheckbox.checked) {
-                    buttonMinus.disabled = true;
-                    buttonPlus.disabled = true;
-                    porPreSection.style.display = "none";
-                    totPreSection.style.display = "inline-flex";
-                    maxPrecio.innerText = 'Bs. ' + preTot.toFixed(2);
-                    maxPersonas.innerText = maxPer.toFixed(0) + ' personas';
-                    tourSbt.innerText = 'Bs. ' + preTot.toFixed(2);
+            // Tour privado
+            tPrivado?.addEventListener("change", () => {
+                const isPrivate = tPrivado.checked;
+                btnPlus.disabled = btnMinus.disabled = isPrivate;
+                porPre.style.display = isPrivate ? "none" : "inline-flex";
+                totPre.style.display = isPrivate ? "inline-flex" : "none";
+                if (isPrivate) {
+                    maxPrecio.innerText = `Bs. ${preTot.toFixed(2)}`;
+                    maxPersonas.innerText = `${maxPer} personas`;
+                    tourSbt.innerText = `Bs. ${preTot.toFixed(2)}`;
                     tourTotal.value = preTot.toFixed(2);
                 } else {
-                    buttonMinus.disabled = false;
-                    buttonPlus.disabled = false;
-                    porPreSection.style.display = "inline-flex";
-                    totPreSection.style.display = "none";
-                    updateSubtotal();
+                    updateAllTotals();
                 }
             });
 
-            function updateSelectedItems() {
-                // Tickets seleccionados
-                const selectedTickets = Array.from(checkboxesTickets)
-                    .filter(checkbox => checkbox.checked)
-                    .map(checkbox => ({
-                        id: checkbox.value,
-                        name: checkbox.dataset.name,
-                        price: parseFloat(nacionalidadSelect.value === "BO" ? checkbox.dataset.nac : checkbox.dataset.ext)
-                    }));
-                document.getElementById("tickets_seleccionados").value = JSON.stringify(selectedTickets);
+            // Navegación entre fases
+            document.querySelectorAll(".continuar").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const next = btn.dataset.next;
+                    btn.closest(".fase").style.display = "none";
+                    $(next).style.display = "block";
+                });
+            });
 
-                // Habitaciones seleccionadas
-                const selectedRooms = Array.from(checkboxesHabitaciones)
-                    .filter(radio => radio.checked)
-                    .map(radio => ({
-                        id: radio.value,
-                        name: radio.dataset.name,
-                        price: parseFloat(nacionalidadSelect.value === "BO" ? radio.dataset.hnac : radio.dataset.hext)
-                    }));
-                document.getElementById("habitaciones_seleccionadas").value = JSON.stringify(selectedRooms);
+            document.querySelectorAll(".regresar").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const prev = btn.dataset.prev;
+                    btn.closest(".fase").style.display = "none";
+                    $(prev).style.display = "block";
+                });
+            });
 
-                // Accesorios seleccionados
-                const selectedAccessories = Array.from(checkboxesAccesorios)
-                    .filter(checkbox => checkbox.checked)
-                    .map(checkbox => ({
-                        id: checkbox.value,
-                        name: checkbox.dataset.aname,
-                        price: parseFloat(checkbox.dataset.aprecio)
-                    }));
-                document.getElementById("accesorios_seleccionados").value = JSON.stringify(selectedAccessories);
+            // Validación de fase 2
+            window.continuar2 = function () {
+                const campos = document.querySelectorAll("#segunda_fase [required]");
+                const vacios = Array.from(campos).some(input => !input.value.trim());
+                if (vacios) {
+                    alert("Por favor llene los campos obligatorios *");
+                    return;
+                }
+                $("segunda_fase").style.display = "none";
+                $("tercera_fase").style.display = "block";
+            };
 
-                // Servicios seleccionados
-                const selectedServices = Array.from(checkboxesServicios)
-                    .filter(checkbox => checkbox.checked)
-                    .map(checkbox => ({
-                        id: checkbox.value,
-                        name: checkbox.dataset.sname,
-                        price: parseFloat(checkbox.dataset.sprecio)
-                    }));
-                document.getElementById("servicios_seleccionados").value = JSON.stringify(selectedServices);
-            }
+            window.regresar2 = function () {
+                $("segunda_fase").style.display = "none";
+                $("primera_fase").style.display = "block";
+            };
 
-            // Llama a updateSelectedItems() cada vez que haya un cambio
-            checkboxesTickets.forEach(checkbox => checkbox.addEventListener("change", updateSelectedItems));
-            checkboxesAccesorios.forEach(checkbox => checkbox.addEventListener("change", updateSelectedItems));
-            checkboxesServicios.forEach(checkbox => checkbox.addEventListener("change", updateSelectedItems));
-            checkboxesHabitaciones.forEach(radio => radio.addEventListener("change", updateSelectedItems));
-
-            // Actualiza los valores al cargar la página
-            document.addEventListener("DOMContentLoaded", updateSelectedItems);
-
+            // Iniciar procesos
+            setFechaMinima();
             handleNacionalidadChange();
-            updateCheckboxTotal();
-            updateAccessoryTotal();
-            updateServicioTotal();
+            updateAllTotals();
+            saveSelections();
         });
-    </script>
 
+    </script>
     <script>
         $(document).ready(function () {
-            // Aplicar Select2 a los selectores ya generados
             $('#alergias').select2({
                 theme: "bootstrap-5",
                 width: '100%',
                 placeholder: 'Seleccionar',
-                closeOnSelect: false,
+                closeOnSelect: false
             });
-
+    
             $('#alimentacion').select2({
                 theme: "bootstrap-5",
                 width: '100%',
                 placeholder: 'Seleccionar',
-                closeOnSelect: false,
+                closeOnSelect: false
             });
         });
     </script>
-
-    <script>
-        // File Upload
-        // 
-        function ekUpload(){
-            function Init() {
-
-                console.log("Upload Initialised");
-
-                var fileSelect    = document.getElementById('file-upload'),
-                    fileDrag      = document.getElementById('file-drag'),
-                    submitButton  = document.getElementById('submit-button');
-
-                fileSelect.addEventListener('change', fileSelectHandler, false);
-
-                // Is XHR2 available?
-                var xhr = new XMLHttpRequest();
-                if (xhr.upload) {
-                // File Drop
-                fileDrag.addEventListener('dragover', fileDragHover, false);
-                fileDrag.addEventListener('dragleave', fileDragHover, false);
-                fileDrag.addEventListener('drop', fileSelectHandler, false);
-                }
-            }
-
-            function fileDragHover(e) {
-                var fileDrag = document.getElementById('file-drag');
-
-                e.stopPropagation();
-                e.preventDefault();
-
-                fileDrag.className = (e.type === 'dragover' ? 'hover' : 'modal-body file-upload');
-            }
-
-            function fileSelectHandler(e) {
-                // Fetch FileList object
-                var files = e.target.files || e.dataTransfer.files;
-
-                // Cancel event and hover styling
-                fileDragHover(e);
-
-                // Process all File objects
-                for (var i = 0, f; f = files[i]; i++) {
-                parseFile(f);
-                uploadFile(f);
-                }
-            }
-
-            // Output
-            function output(msg) {
-                // Response
-                var m = document.getElementById('messages');
-                m.innerHTML = msg;
-            }
-
-            function parseFile(file) {
-                var fileName = file.name.toLowerCase();
-                var isImage = /\.(gif|jpg|jpeg|png)$/i.test(fileName);
-                var isPDF = /\.pdf$/i.test(fileName);
-
-                if (isImage) {
-                    // Mostrar imagen
-                    document.getElementById('file-image').classList.remove("hidden");
-                    document.getElementById('file-image').src = URL.createObjectURL(file);
-                    document.getElementById('pdf-preview').classList.add("hidden");
-                } else if (isPDF) {
-                    // Mostrar PDF en iframe
-                    document.getElementById('pdf-preview').classList.remove("hidden");
-                    document.getElementById('pdf-preview').src = URL.createObjectURL(file);
-                    document.getElementById('file-image').classList.add("hidden");
-                } else {
-                    // Archivo no soportado
-                    document.getElementById('file-image').classList.add("hidden");
-                    document.getElementById('pdf-preview').classList.add("hidden");
-                    alert('Por favor selecciona un archivo válido (imagen o PDF).');
-                }
-            }
-
-            function setProgressMaxValue(e) {
-                var pBar = document.getElementById('file-progress');
-
-                if (e.lengthComputable) {
-                pBar.max = e.total;
-                }
-            }
-
-            function updateFileProgress(e) {
-                var pBar = document.getElementById('file-progress');
-
-                if (e.lengthComputable) {
-                pBar.value = e.loaded;
-                }
-            }
-
-            function uploadFile(file) {
-
-                var xhr = new XMLHttpRequest(),
-                fileInput = document.getElementById('class-roster-file'),
-                pBar = document.getElementById('file-progress'),
-                fileSizeLimit = 1024; // In MB
-                if (xhr.upload) {
-                // Check if file is less than x MB
-                if (file.size <= fileSizeLimit * 1024 * 1024) {
-                    // Progress bar
-                    pBar.style.display = 'inline';
-                    xhr.upload.addEventListener('loadstart', setProgressMaxValue, false);
-                    xhr.upload.addEventListener('progress', updateFileProgress, false);
-
-                    // File received / failed
-                    xhr.onreadystatechange = function(e) {
-                    if (xhr.readyState == 4) {
-                        // Everything is good!
-
-                        // progress.className = (xhr.status == 200 ? "success" : "failure");
-                        // document.location.reload(true);
-                    }
-                    };
-
-                    // Start upload
-                    xhr.open('POST', document.getElementById('file-upload-form').action, true);
-                    xhr.setRequestHeader('X-File-Name', file.name);
-                    xhr.setRequestHeader('X-File-Size', file.size);
-                    xhr.setRequestHeader('Content-Type', 'multipart/form-data');
-                    xhr.send(file);
-                } else {
-                    output('Please upload a smaller file (< ' + fileSizeLimit + ' MB).');
-                }
-                }
-            }
-
-            // Check for the various File API support.
-            if (window.File && window.FileList && window.FileReader) {
-                Init();
-            } else {
-                document.getElementById('file-drag').style.display = 'none';
-            }
-        }
-        ekUpload();
-    </script>
-
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const continuarButtons = document.querySelectorAll(".continuar");
-            const regresarButtons = document.querySelectorAll(".regresar");
+            const $ = id => document.getElementById(id);
 
-            continuarButtons.forEach(button => {
-                button.addEventListener("click", function () {
-                    const currentSection = button.closest(".fase");
-                    const nextSectionId = button.getAttribute("data-next");
+            const fileInput = $("file-upload");
+            const fileDrag = $("file-drag");
+            const fileImage = $("file-image");
+            const pdfPreview = $("pdf-preview");
+            const pdfLabel = $("pdf-upload");
+            const fileProgress = $("file-progress");
+            const fileUploadBtn = $("file-upload-btn");
 
-                    if (nextSectionId) {
-                        currentSection.style.display = "none"; // Oculta la sección actual
-                        document.getElementById(nextSectionId).style.display = "block"; // Muestra la siguiente sección
-                    }
-                });
-            });
+            if (!fileInput || !fileDrag) return;
 
-            regresarButtons.forEach(button => {
-                button.addEventListener("click", function () {
-                    const currentSection = button.closest(".fase");
-                    const prevSectionId = button.getAttribute("data-prev");
+            const handleHover = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                fileDrag.classList.toggle("hover", e.type === 'dragover');
+            };
 
-                    if (prevSectionId) {
-                        currentSection.style.display = "none"; // Oculta la sección actual
-                        document.getElementById(prevSectionId).style.display = "block"; // Muestra la sección anterior
-                    }
-                });
+            const previewFile = (file) => {
+                const fileName = file.name.toLowerCase();
+                const isImage = /\.(gif|jpe?g|png)$/i.test(fileName);
+                const isPDF = /\.pdf$/i.test(fileName);
+
+                fileImage.classList.add("hidden");
+                pdfPreview.classList.add("hidden");
+
+                if (isImage) {
+                    fileImage.src = URL.createObjectURL(file);
+                    fileImage.classList.remove("hidden");
+                    pdfLabel.textContent = file.name;
+                } else if (isPDF) {
+                    pdfPreview.src = URL.createObjectURL(file);
+                    pdfPreview.classList.remove("hidden");
+                    pdfLabel.textContent = file.name;
+                } else {
+                    pdfLabel.textContent = "Archivo no soportado";
+                    alert("Selecciona una imagen o PDF válido.");
+                }
+            };
+
+            const handleFileSelect = (e) => {
+                const files = e.target.files || e.dataTransfer.files;
+                handleHover(e);
+                [...files].forEach(previewFile);
+            };
+
+            ["dragover", "dragleave", "drop"].forEach(event =>
+                fileDrag.addEventListener(event, handleHover, false)
+            );
+
+            fileInput.addEventListener("change", handleFileSelect, false);
+            fileDrag.addEventListener("drop", handleFileSelect, false);
+
+            // botón que dispara la selección
+            fileUploadBtn.addEventListener("click", () => {
+                fileInput.click();
             });
         });
     </script>
     <script>
-            function continuar2(){ 
-                const continuarButtons = document.querySelectorAll(".continuar2");
-                const regresarButtons = document.querySelectorAll(".regresar2");
-                const requiredFields = document.querySelectorAll("#segunda_fase [required]");
-                let allFilled = true;
-                                        requiredFields.forEach(field => {
-                                            if (!field.value) {
-                                                allFilled = false;
-                                            }
-                                        });
-                const valorFinal = allFilled;
-                if(valorFinal){
-                    document.getElementById('segunda_fase').style.display = "none"; // Oculta la sección actual
-                            document.getElementById('tercera_fase').style.display = "block";
-                }else{
-                    alert('Por favor llene los campos obligatorios *');
-                }
+        document.addEventListener("DOMContentLoaded", function () {
+            const selectAllTickets = document.getElementById('select_all_tickets');
+            const ticketCheckboxes = document.querySelectorAll('.ticket-checkbox');
+    
+            if (selectAllTickets) {
+                selectAllTickets.addEventListener('change', function () {
+                    ticketCheckboxes.forEach(cb => cb.checked = this.checked);
+                    
+                    // Disparar evento manualmente para que se actualice el total
+                    ticketCheckboxes.forEach(cb => cb.dispatchEvent(new Event('change')));
+                });
             }
-
-            function regresar2(){
-                document.getElementById('segunda_fase').style.display = "none"; // Oculta la sección actual
-                document.getElementById('primera_fase').style.display = "block";
-            }
+        });
     </script>    
 @endsection

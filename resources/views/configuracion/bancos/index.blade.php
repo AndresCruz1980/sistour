@@ -104,7 +104,7 @@
                                                 @include('configuracion.bancos.edit')
                                             </form>
 
-                                            <form action="{{ route('estatus.update', $banco->id) }}" class="ms-1" method="POST">
+                                            <form action="{{ route('confbancos.destroy', $banco->id) }}" class="ms-1" method="POST">
                                                 @csrf
                                                 @method('PUT')
 

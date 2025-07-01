@@ -36,7 +36,7 @@ class AlimentacionController extends Controller
         $alimentos = $request->all();
         Alimentacion::create($alimentos);
 
-        return back()->with('success','Tipo de alimentaci籀n agregada');
+        return back()->with('success','Tipo de alimentaci車n agregada');
     }
 
     /**
@@ -70,7 +70,8 @@ class AlimentacionController extends Controller
         $alimento->estatus       = $request->estatus;
         $alimento->save();
 
-        return redirect()->route('confalimentacion.index')->with('success','Tipo de alimentaci籀n actualizada');
+        /*return redirect()->route('configuracion.alimentacion.index')->with('success','Tipo de alimentaci車n actualizada');*/
+        return back()->with('success','Tipo de alimentaci車n actualizada');
     }
 
     /**
@@ -80,6 +81,7 @@ class AlimentacionController extends Controller
     {
         Alimentacion::destroy($id);
 
-        return redirect()->route('confalimentacion.index')->with('success','Tipo de alimentaci籀n eliminada');
+        /*return redirect()->route('configuracion.alimentacion.index')->with('success','Tipo de alimentaci車n eliminada');*/
+        return back()->with('success','Tipo de alimentaci車n eliminada');
     }
 }

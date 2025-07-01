@@ -102,7 +102,7 @@
                                                 @include('configuracion.alimentacion.edit')
                                             </form>
 
-                                            <form action="{{ route('estatus.update', $alimento->id) }}" class="ms-1" method="POST">
+                                            <form action="{{ route('confalimentacion.destroy', $alimento->id) }}" class="ms-1" method="POST">
                                                 @csrf
                                                 @method('PUT')
 

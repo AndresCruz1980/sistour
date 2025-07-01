@@ -3,31 +3,38 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Mail\Mailables\Attachment;
+use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\Mailables\Content;
 
 class ReservaTour extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $data;
+    public $reserva;
+    public $cliente;
+    public $pagina;
+    public $turistasAdicionales;
+    public $pdfPath;
 
     /**
      * Create a new message instance.
+     *
+     * @param  mixed  $reserva
+     * @param  mixed  $cliente
+     * @param  string|null  $pagina
+     * @param  array  $turistasAdicionales
+     * @param  string|null  $pdfPath
      */
-    public function __construct($data, $tour_id)
+    public function __construct($reserva, $cliente, $pagina = null, $turistasAdicionales = [], $pdfPath = null)
     {
-        $this->data = $data;
-        $this->tour_id = $tour_id;
-    }
-
-    public function build()
-    {
-        return $this->view('emails.reserva')
-                ->subject('Cotización de tours');
+        $this->reserva = $reserva;
+        $this->cliente = $cliente;
+        $this->pagina = $pagina;
+        $this->turistasAdicionales = $turistasAdicionales;
+        $this->pdfPath = $pdfPath;
     }
 
     /**
@@ -36,7 +43,7 @@ class ReservaTour extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Tour reservado - Pagina de Tours',
+            subject: 'Tu reserva ha sido confirmada'
         );
     }
 
@@ -48,19 +55,27 @@ class ReservaTour extends Mailable
         return new Content(
             view: 'emails.reserva',
             with: [
-                'data' => $this->data,
-                'tour_id' => $this->tour_id,
+                'reserva' => $this->reserva,
+                'cliente' => $this->cliente,
+                'pagina' => $this->pagina,
+                'turistas_adicionales' => $this->turistasAdicionales,
             ]
         );
     }
 
     /**
      * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
     public function attachments(): array
     {
+        if ($this->pdfPath) {
+            return [
+                Attachment::fromPath($this->pdfPath)
+                    ->as('Resumen_Reserva.pdf')
+                    ->withMime('application/pdf'),
+            ];
+        }
+
         return [];
     }
 }

@@ -50,7 +50,7 @@
                     
                     <div class="card-body">
                         <h6 class="card-title mb-4 text-uppercase">
-                            <b>Salida del tour: {{ $reserva->fecha }}</b>
+                            <b>Salida del tour: {{\Carbon\Carbon::parse($reserva->fecha)->format('d-m-Y')}}</b>
                         </h6>
 
                         <div class="row mt-4">
@@ -59,7 +59,7 @@
                                 <dd class="col-sm-12">{{ $reserva->codigo }}</dd>
                             </dl>
 
-                            <dl class="col-md-3">
+                            <dl class="col-md-2">
                                 <dt class="col-sm-12">Nombre del tour</dt>
                                 <dd class="col-sm-12">{{ $reserva->tour->titulo }}</dd>
                             </dl>
@@ -72,28 +72,34 @@
                                 </dd>
                             </dl>
 
+                            <!-- Total de la reserva -->
+                            <dl class="col-md-2">
+                                <dt class="col-sm-12">Total Reserva</dt>
+                                <dd class="col-sm-12" id="totalReserva" data-total="{{ $reserva->total }}">
+                                    {{ 'Bs. '.number_format($reserva->total, 2, '.', ',') }}
+                                </dd>
+                            </dl>
+
+                            <!-- Total de la pagado -->
                             <dl class="col-md-2">
                                 <dt class="col-sm-12">Total Pagado</dt>
-                                <dd class="col-sm-12">
-                                    @php $tot_dir = 0; @endphp
-
-                                    @foreach($resclis as $rescli)
-                                        @if($rescli->estatus == "1")
-                                            @php
-                                                $sumaMonto = Pago::where('rescli_id', $rescli->id)
-                                                                ->where('estatus', 1)
-                                                                ->sum('conversion');
-
-                                                $tot_dir += $sumaMonto;
-                                            @endphp
-                                        @endif
-                                    @endforeach
-
+                                @php $tot_dir = 0; @endphp
+                                @foreach($resclis as $rescli)
+                                    @if($rescli->estatus == "1")
+                                        @php
+                                            $sumaMonto = Pago::where('rescli_id', $rescli->id)
+                                                            ->where('estatus', 1)
+                                                            ->sum('conversion');
+                                            $tot_dir += $sumaMonto;
+                                        @endphp
+                                    @endif
+                                @endforeach
+                                <dd class="col-sm-12" id="totalPagado" data-pagado="{{ $tot_dir }}">
                                     {{ 'Bs. '.number_format($tot_dir, 2, '.', ',') }}
                                 </dd>
                             </dl>
 
-                            <dl class="col-md-3">
+                            <dl class="col-md-2">
                                 <form action="{{ route('venreservas.update', $reserva->id) }}" method="POST">
                                     @csrf
                                     @method('PUT')
@@ -129,12 +135,11 @@
                             </dl>
 
                             <dl class="col-md-2">
-                                <form action="{{ route('desges.store') }}" method="POST" enctype="multipart/form-data">
+                                <form action="{{ route('desges.store') }}" method="POST" enctype="multipart/form-data" id="form-despachar">
                                     @csrf
-
                                     <input type="hidden" value="{{ $reserva->id }}" id="reserva_id" name="reserva_id">
-
-                                    <button type="submit" class="btn btn-success col-md-12">Despachar</button>
+                                
+                                    <button type="button" class="btn btn-success col-md-12" id="btn-despachar">Despachar</button>
                                 </form>
                             </dl>
                         </div>
@@ -201,16 +206,7 @@
                                                 <td>{{ $rescli->celular }}</td>
                                                 <td>{{ $rescli->correo }}</td>
                                                 
-                                                <td>
-                                                    @if($rescli->esPrincipal)
-                                                        @php
-                                                            $pag_tot = ($reserva->total - (($reserva->can_per - 1) * $reserva->pre_per));
-                                                        @endphp
-                                                        {{ 'Bs. '.number_format($pag_tot, 2, '.', ',') }}
-                                                    @else
-                                                        {{ 'Bs. '.number_format($rescli->total, 2, '.', ',') }}
-                                                    @endif
-                                                </td>
+                                                <td>{{ 'Bs. '.number_format($rescli->total, 2, '.', ',') }}</td>
                                     
                                                 <!-- ✅ Mostrar Pagado: Solo suma pagos activos -->
                                                 <td>{{ 'Bs. '.number_format($sumaMonto, 2, '.', ',') }}</td>
@@ -222,7 +218,10 @@
                                                     <div class="d-flex order-actions">
                                                         @if($rescli->esPrincipal == "1")
                                                         @else
-                                                            <a href="{{ URL::to('ventas/resclis/user/' . $rescli->id) }}" target="_BLANK">
+                                                            <a href="#" 
+                                                                class="copiar-enlace" 
+                                                                data-link="{{ URL::to('ventas/resclis/user/' . $rescli->id) }}" 
+                                                                title="Copiar enlace">
                                                                 <i class="bx bxs-user"></i>
                                                             </a>
                                                         @endif
@@ -291,4 +290,48 @@
             });
         });
     </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll('.copiar-enlace').forEach(function (enlace) {
+                enlace.addEventListener('click', function (e) {
+                    e.preventDefault(); // Evita navegación
+        
+                    const url = this.getAttribute('data-link');
+        
+                    if (!navigator.clipboard) {
+                        alert("Tu navegador no soporta copiar automáticamente.");
+                        return;
+                    }
+        
+                    navigator.clipboard.writeText(url).then(() => {
+                        alert("🔗 Enlace copiado al portapapeles:\n" + url);
+                    }).catch(err => {
+                        console.error("Error al copiar:", err);
+                        alert("❌ Ocurrió un error al copiar el enlace.");
+                    });
+                });
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const btnDespachar = document.getElementById('btn-despachar');
+            const form = document.getElementById('form-despachar');
+
+            btnDespachar.addEventListener('click', function () {
+                const totalPagado = parseFloat(document.getElementById('totalPagado').dataset.pagado || 0);
+                const totalReserva = parseFloat(document.getElementById('totalReserva').dataset.total || 0);
+
+                if (Math.abs(totalPagado - totalReserva) < 0.01) {
+                    // Confirmación opcional
+                    if (confirm("¿Deseas despachar esta reserva?")) {
+                        form.submit();
+                    }
+                } else {
+                    alert('⚠️ El total pagado no coincide con el total de la reserva. No se puede despachar.');
+                }
+            });
+        });
+    </script>  
 @endsection

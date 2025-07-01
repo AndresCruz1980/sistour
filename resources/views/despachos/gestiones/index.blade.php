@@ -73,7 +73,7 @@
 
                                 <tr>
                                     <td>{{ $reserva->tour->titulo }}</td>
-                                    <td>{{ $reserva->fecha }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($reserva->fecha)->format('d-m-Y') }}</td>
                                     
                                     <td>
                                         <div class="d-flex order-actions">

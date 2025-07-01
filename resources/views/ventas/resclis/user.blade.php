@@ -166,15 +166,21 @@
         .tab-pane .form-check-label span {
             float: right;
         }
+        #preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 @endsection
 
 @section('content')
     <link href="{{ asset('assets/plugins/bs-stepper/css/bs-stepper.css') }}" rel="stylesheet" />
     
-    <form action="{{ route('venresclis.update', $rescli->id) }}" class="uploader" method="POST" id="file-upload-form" enctype="multipart/form-data">
+    <form action="{{ route('venresclis.update.external', $rescli->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
-        @method('PUT')
+        @method('put')
 
         @php
             use App\Models\Servicio\Hotel;
@@ -212,7 +218,7 @@
                                         $newDate = date("m/d/Y", strtotime($originalDate));
                                     @endphp
 
-                                    <input type="hidden" value="file_panel" id="pagina" name="pagina" />
+                                    <input type="hidden" value="user_external" id="pagina" name="pagina" />
                                     <input type="hidden" value="{{ $rescli->reserva->id }}" id="reserva_id" name="reserva_id">
                                     <input type="hidden" value="{{ $rescli->id }}" id="rescli_id" name="rescli_id">
 
@@ -266,9 +272,12 @@
 
                                     <hr>
 
-                                    <div class="d-flex align-items-center gap-2">
-                                        <!-- a href="javascript:;" class="btn btn-danger regresar col-md-6" data-prev=""><i class="bx bx-microphone"></i>Cancelar</a -->
-                                        <a href="javascript:;" class="btn btn-primary continuar col-md-12" data-next="segunda_fase">Continuar <i class="fadeIn animated bx bx-arrow-to-right"></i></a>
+
+                                    <div class="col-md-12">
+                                        <div class="d-flex align-items-center gap-2">                                        
+                                            <!-- a href="javascript:;" class="btn btn-danger regresar col-md-6" data-prev=""><i class="bx bx-microphone"></i>Cancelar</a -->
+                                            <a href="javascript:;" class="btn btn-primary continuar col-md-6" data-next="segunda_fase">Continuar <i class="fadeIn animated bx bx-arrow-to-right"></i></a>                                   
+                                        </div>
                                     </div>
                                 </div>
 
@@ -324,8 +333,8 @@
                                         </div>
 
                                         <div class="col-md-12">
-                                            <label for="alergias" class="form-label">Alergias <span>*</span></label>
-                                            <select class="form-select" id="alergias" name="alergias[]" type="select" required data-placeholder="Seleccionar" multiple>
+                                            <label for="alergias" class="form-label">Alergias</label>
+                                            <select class="form-select" id="alergias" name="alergias[]" type="select" data-placeholder="Seleccionar" multiple>
                                                 @foreach($alergias as $alergia)
                                                     <option value="{{ $alergia->id }}">{{ $alergia->titulo }}</option>
                                                 @endforeach
@@ -333,8 +342,8 @@
                                         </div>
 
                                         <div class="col-md-12">
-                                            <label for="alimentacion" class="form-label">Tipo alimentación <span>*</span></label>
-                                            <select class="form-select" id="alimentacion" name="alimentacion[]" type="select" required data-placeholder="Seleccionar" multiple>
+                                            <label for="alimentacion" class="form-label">Tipo alimentación</label>
+                                            <select class="form-select" id="alimentacion" name="alimentacion[]" type="select" data-placeholder="Seleccionar" multiple>
                                                 @foreach($alimentos as $alimento)
                                                     <option value="{{ $alimento->id }}">{{ $alimento->titulo }}</option>
                                                 @endforeach
@@ -342,40 +351,29 @@
                                         </div>
 
                                         <div class="col-md-12">
-                                            <label for="nota" class="form-label">Nota adicional <span>*</span></label>
-                                            <input type="text" class="form-control" id="nota" name="nota" required />
+                                            <label for="nota" class="form-label">Nota adicional</label>
+                                            <input type="text" class="form-control" id="nota" name="nota" />
                                         </div>
 
                                         <div class="col-md-12">
-                                            <label for="alimentacion" class="form-label">
+                                            <label for="file-upload" class="form-label">
                                                 Es importante subir una imagen del documento de identidad para su seguridad y la nuestra.
                                             </label>
-
-                                            <input class="form-control form-control-solid" id="file-upload" name="file" type="file" accept=".pdf, .doc, .docx, image/*" required />
-
-                                            <label for="file-upload" id="file-drag">
-                                                <img id="file-image" src="#" alt="Preview" class="hidden">
-                                                <iframe id="pdf-preview" style="display: none;" class="hidden" width="100%" height="500px"></iframe>
+                                        
+                                            <div id="file-drop-zone" class="p-4 text-center border rounded" style="background-color: #f8f9fa;">
+                                                <input class="form-control d-none" id="file-upload" name="file" type="file" accept=".pdf, .doc, .docx, image/*" />
                                                 
-                                                <div id="start">
-                                                    <i class="fa fa-download" aria-hidden="true"></i>
-                                                    <div>Selecciona el archivo a cargar</div>
-                                                    <div id="notimage" class="hidden">Selecciona una imagen</div>
-                                                    <span id="file-upload-btn" class="btn btn-primary">Selecciona un archivo</span>
+                                                <div id="preview-container" class="mb-3">
+                                                    <img id="file-image" src="#" alt="Miniatura" style="display: none; max-height: 120px; object-fit: contain;" />
+                                                    <p id="file-name" class="text-primary mt-2" style="display: none;"></p>
                                                 </div>
-
-                                                <div id="response" class="hidden">
-                                                    <div id="messages"></div>
-                                                    
-                                                    <progress class="progress" id="file-progress" value="0">
-                                                        <span>0</span>%
-                                                    </progress>
-                                                </div>
-                                            </label>
+                                        
+                                                <button type="button" class="btn btn-primary" onclick="document.getElementById('file-upload').click()">Seleccionar archivo</button>
+                                            </div>
                                         </div>
-
+                                        
                                         <div class="col-md-12">
-                                            <div class="d-flex align-items-center gap-2">
+                                            <div class="d-flex justify-content-center gap-2">
                                                 <a href="javascript:;" class="btn btn-danger regresar col-md-6" data-prev="primera_fase"><i class="fadeIn animated bx bx-arrow-to-left"></i>Regresar</a>
                                                 <a href="javascript:;" class="btn btn-primary continuar col-md-6" data-next="tercera_fase">Continuar <i class="fadeIn animated bx bx-arrow-to-right"></i></a>
                                             </div>
@@ -421,9 +419,15 @@
                                     <div class="tab-content py-3">
                                         <div class="tab-pane fade show active" id="tourtickets" role="tabpanel">
                                             <div class="col-md-12">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="select_all_tickets">
+                                                    <label class="form-check-label" for="select_all_tickets">
+                                                        <strong>Seleccionar todos</strong>
+                                                    </label>
+                                                </div>    
                                                 @foreach($tickets as $ticket)
                                                     <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" name="ticket_id[]" value="{{ $ticket->id }}" id="ticket_{{ $ticket->id }}" 
+                                                        <input class="form-check-input ticket-checkbox" type="checkbox" name="ticket_id[]" value="{{ $ticket->id }}" id="ticket_{{ $ticket->id }}" 
                                                             data-name="{{ $ticket->titulo }}"
                                                             data-nac="{{ number_format($ticket->nacionales, 2, '.', '') }}"
                                                             data-ext="{{ number_format($ticket->extranjeros, 2, '.', '') }}">
@@ -466,7 +470,9 @@
                                                                                 name="habitacion_dia_{{ $key }}"
                                                                                 data-name="{{ $habitacion->titulo }}"
                                                                                 data-hnac="{{ number_format($habitacion->nacionales, 2, '.', '') }}"
-                                                                                data-hext="{{ number_format($habitacion->extranjeros, 2, '.', '') }}" />
+                                                                                data-hext="{{ number_format($habitacion->extranjeros, 2, '.', '') }}" 
+                                                                                data-dia="{{ $key }}"  />
+
 
                                                                             <label class="form-check-label" for="form_habi_{{ $hotel->id }}_{{ $habitacion->id }}_dia{{ $key }}">
                                                                                 {{ $habitacion->titulo }}
@@ -516,12 +522,10 @@
                                         </div>
                                     </div>
 
-                                    <div class="row g-3">
-                                        <div class="col-md-12">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <a href="javascript:;" class="btn btn-danger regresar col-md-6" data-prev="segunda_fase"><i class="fadeIn animated bx bx-arrow-to-left"></i>Regresar</a>
-                                                <a href="javascript:;" class="btn btn-primary continuar col-md-6" data-next="cuarta_fase">Continuar <i class="fadeIn animated bx bx-arrow-to-right"></i></a>
-                                            </div>
+                                    <div class="col-md-12">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a href="javascript:;" class="btn btn-danger regresar col-md-6" data-prev="segunda_fase"><i class="fadeIn animated bx bx-arrow-to-left"></i>Regresar</a>
+                                            <a href="javascript:;" class="btn btn-primary continuar col-md-6" data-next="cuarta_fase">Continuar <i class="fadeIn animated bx bx-arrow-to-right"></i></a>
                                         </div>
                                     </div>
                                 </div>
@@ -617,12 +621,11 @@
                                         </div>
                                     </div>
 
-                                    <div class="row g-3">
-                                        <div class="col-md-12">
-                                            <div class="d-flex align-items-center gap-2">
-                                                <a href="javascript:;" class="btn btn-danger regresar col-md-6" data-prev="tercera_fase"><i class="fadeIn animated bx bx-arrow-to-left"></i>Regresar</a>
-                                                <button type="submit" class="btn btn-primary continuar col-md-6">Reservar <i class="fadeIn animated bx bx-arrow-to-right"></i></button>
-                                            </div>
+                                    
+                                    <div class="col-md-12">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a href="javascript:;" class="btn btn-danger regresar col-md-6" data-prev="tercera_fase"><i class="fadeIn animated bx bx-arrow-to-left"></i>Regresar</a>
+                                            <button type="submit" class="btn btn-success col-md-6">Reservar</button>
                                         </div>
                                     </div>
                                 </div>
@@ -654,7 +657,7 @@
 
                                     <dl class="col-md-12 row tickets_cont" id="tickets_cont" style="display: none;">
                                         <dt class="col-sm-12">
-                                            <span class="btn btn-inverse-success mb-3 col-md-12">Tickers</span>
+                                            <span class="btn btn-inverse-success mb-3 col-md-12">Tickets</span>
                                         </dt>
 
                                         <dt class="col-sm-5" id="tic_name"></dt>
@@ -758,6 +761,15 @@
             let totalAccesorios = 0;
             let totalServicios = 0;
             let totalHabitaciones = 0;
+
+            // Selecciona todos los checkboxes de tickets al cambiar el checkbox de "Seleccionar todos"
+            document.getElementById('select_all_tickets').addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.ticket-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+                updateCheckboxTotal();
+            });   
 
             // Función para manejar el cambio en el select de nacionalidad
             function handleNacionalidadChange() {
@@ -981,7 +993,9 @@
                     .map(radio => ({
                         id: radio.value,
                         name: radio.dataset.name,
-                        price: parseFloat(nacionalidadSelect.value === "BO" ? radio.dataset.hnac : radio.dataset.hext)
+                        price: parseFloat(nacionalidadSelect.value === "BO" ? radio.dataset.hnac : radio.dataset.hext),
+                        dia: parseInt(radio.dataset.dia) // 👈 Agrega el día al JSON
+
                     }));
                 document.getElementById("habitaciones_seleccionadas").value = JSON.stringify(selectedRooms);
 
@@ -1023,6 +1037,39 @@
     </script>
 
     <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const fileInput = document.getElementById('file-upload');
+            const imgPreview = document.getElementById('file-image');
+            const fileNameText = document.getElementById('file-name');
+
+            fileInput.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const fileName = file.name.toLowerCase();
+                const isImage = /\.(gif|jpg|jpeg|png)$/i.test(fileName);
+                const isPDF = /\.pdf$/i.test(fileName);
+
+                if (isImage) {
+                    imgPreview.src = URL.createObjectURL(file);
+                    imgPreview.style.display = "block";
+                    fileNameText.style.display = "block";
+                    fileNameText.innerHTML = `<strong>Imagen seleccionada:</strong> ${file.name}`;
+                } else if (isPDF) {
+                    imgPreview.style.display = "none";
+                    fileNameText.style.display = "block";
+                    fileNameText.innerHTML = `<strong>PDF seleccionado:</strong> ${file.name}`;
+                } else {
+                    imgPreview.style.display = "none";
+                    fileNameText.style.display = "block";
+                    fileNameText.innerHTML = `<strong>Archivo no soportado:</strong> ${file.name}`;
+                }
+            });
+        });
+    </script>
+
+    
+    <script>
         $(document).ready(function () {
             // Aplicar Select2 a los selectores ya generados
             $('#alergias').select2({
@@ -1040,146 +1087,6 @@
             });
         });
     </script>
-
-    <script>
-        // File Upload
-        // 
-        function ekUpload(){
-            function Init() {
-
-                console.log("Upload Initialised");
-
-                var fileSelect    = document.getElementById('file-upload'),
-                    fileDrag      = document.getElementById('file-drag'),
-                    submitButton  = document.getElementById('submit-button');
-
-                fileSelect.addEventListener('change', fileSelectHandler, false);
-
-                // Is XHR2 available?
-                var xhr = new XMLHttpRequest();
-                if (xhr.upload) {
-                // File Drop
-                fileDrag.addEventListener('dragover', fileDragHover, false);
-                fileDrag.addEventListener('dragleave', fileDragHover, false);
-                fileDrag.addEventListener('drop', fileSelectHandler, false);
-                }
-            }
-
-            function fileDragHover(e) {
-                var fileDrag = document.getElementById('file-drag');
-
-                e.stopPropagation();
-                e.preventDefault();
-
-                fileDrag.className = (e.type === 'dragover' ? 'hover' : 'modal-body file-upload');
-            }
-
-            function fileSelectHandler(e) {
-                // Fetch FileList object
-                var files = e.target.files || e.dataTransfer.files;
-
-                // Cancel event and hover styling
-                fileDragHover(e);
-
-                // Process all File objects
-                for (var i = 0, f; f = files[i]; i++) {
-                parseFile(f);
-                uploadFile(f);
-                }
-            }
-
-            // Output
-            function output(msg) {
-                // Response
-                var m = document.getElementById('messages');
-                m.innerHTML = msg;
-            }
-
-            function parseFile(file) {
-                var fileName = file.name.toLowerCase();
-                var isImage = /\.(gif|jpg|jpeg|png)$/i.test(fileName);
-                var isPDF = /\.pdf$/i.test(fileName);
-
-                if (isImage) {
-                    // Mostrar imagen
-                    document.getElementById('file-image').classList.remove("hidden");
-                    document.getElementById('file-image').src = URL.createObjectURL(file);
-                    document.getElementById('pdf-preview').classList.add("hidden");
-                } else if (isPDF) {
-                    // Mostrar PDF en iframe
-                    document.getElementById('pdf-preview').classList.remove("hidden");
-                    document.getElementById('pdf-preview').src = URL.createObjectURL(file);
-                    document.getElementById('file-image').classList.add("hidden");
-                } else {
-                    // Archivo no soportado
-                    document.getElementById('file-image').classList.add("hidden");
-                    document.getElementById('pdf-preview').classList.add("hidden");
-                    alert('Por favor selecciona un archivo válido (imagen o PDF).');
-                }
-            }
-
-            function setProgressMaxValue(e) {
-                var pBar = document.getElementById('file-progress');
-
-                if (e.lengthComputable) {
-                pBar.max = e.total;
-                }
-            }
-
-            function updateFileProgress(e) {
-                var pBar = document.getElementById('file-progress');
-
-                if (e.lengthComputable) {
-                pBar.value = e.loaded;
-                }
-            }
-
-            function uploadFile(file) {
-
-                var xhr = new XMLHttpRequest(),
-                fileInput = document.getElementById('class-roster-file'),
-                pBar = document.getElementById('file-progress'),
-                fileSizeLimit = 1024; // In MB
-                if (xhr.upload) {
-                // Check if file is less than x MB
-                if (file.size <= fileSizeLimit * 1024 * 1024) {
-                    // Progress bar
-                    pBar.style.display = 'inline';
-                    xhr.upload.addEventListener('loadstart', setProgressMaxValue, false);
-                    xhr.upload.addEventListener('progress', updateFileProgress, false);
-
-                    // File received / failed
-                    xhr.onreadystatechange = function(e) {
-                    if (xhr.readyState == 4) {
-                        // Everything is good!
-
-                        // progress.className = (xhr.status == 200 ? "success" : "failure");
-                        // document.location.reload(true);
-                    }
-                    };
-
-                    // Start upload
-                    xhr.open('POST', document.getElementById('file-upload-form').action, true);
-                    xhr.setRequestHeader('X-File-Name', file.name);
-                    xhr.setRequestHeader('X-File-Size', file.size);
-                    xhr.setRequestHeader('Content-Type', 'multipart/form-data');
-                    xhr.send(file);
-                } else {
-                    output('Please upload a smaller file (< ' + fileSizeLimit + ' MB).');
-                }
-                }
-            }
-
-            // Check for the various File API support.
-            if (window.File && window.FileList && window.FileReader) {
-                Init();
-            } else {
-                document.getElementById('file-drag').style.display = 'none';
-            }
-        }
-        ekUpload();
-    </script>
-
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const continuarButtons = document.querySelectorAll(".continuar");

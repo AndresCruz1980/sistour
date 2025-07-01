@@ -235,7 +235,6 @@
                                     <input type="hidden" value="file_panel" id="pagina" name="pagina" />
                                     <input type="hidden" value="{{ $rescli->reserva->id }}" id="reserva_id" name="reserva_id">
                                     <input type="hidden" value="{{ $rescli->id }}" id="rescli_id" name="rescli_id">
-
                                     <input type="hidden" id="hor_lim" name="hor_lim" value="{{ $tour->hor_lim }}" />
                                     <input type="hidden" id="max_per" name="max_per" value="{{ $tour->max_per }}" />
                                     <input type="hidden" id="pre_tot" name="pre_tot" value="{{ $rescli->reserva->pre_tot }}" />
@@ -286,10 +285,6 @@
 
                                     <hr>
 
-                                    <div class="d-flex align-items-center gap-2">
-                                        <!-- a href="javascript:;" class="btn btn-danger regresar col-md-6" data-prev=""><i class="bx bx-microphone"></i>Cancelar</a -->
-                                        <a href="javascript:;" class="btn btn-primary continuar col-md-12" data-next="segunda_fase">Continuar <i class="fadeIn animated bx bx-arrow-to-right"></i></a>
-                                    </div>
                                 </div>
 
                                 <div class="card-body pt-5 pb-5 p-4 fase" id="segunda_fase">
@@ -428,7 +423,7 @@
                                             <div id="preview-container">
                                                 @if(!empty($rescli->file))
                                                     @php
-                                                        $filePath = asset("files_documentos/$rescli->file");
+                                                        $filePath = asset("public/files_documentos/$rescli->file");
                                                         $extension = pathinfo($rescli->file, PATHINFO_EXTENSION);
                                                         $fileName = pathinfo($rescli->file, PATHINFO_BASENAME);
                                                     @endphp
@@ -441,14 +436,6 @@
                                                         <a href="{{ $filePath }}" target="_blank" class="btn btn-primary">Descargar PDF</a>
                                                     @endif
                                                 @endif
-                                            </div>
-                                        </div>
-                                                                              
-
-                                        <div class="col-md-12">
-                                            <div class="d-flex justify-content-center gap-2">
-                                                <a href="javascript:regresar2();" class="btn btn-danger regresar2 col-md-6" data-prev="primera_fase"><i class="fadeIn animated bx bx-arrow-to-left"></i>Regresar</a>
-                                                <a href="javascript:continuar2();" class="btn btn-primary continuar2 col-md-6" data-next="tercera_fase">Continuar <i class="fadeIn animated bx bx-arrow-to-right"></i></a>
                                             </div>
                                         </div>
                                     </div>
@@ -491,7 +478,7 @@
 
                                     @php
                                         $ticket_id = is_string($rescli->tickets) ? json_decode($rescli->tickets, true) : $rescli->tickets;
-                                        $habitacion_id = is_string($rescli->habitaciones) ? json_decode($rescli->habitaciones, true) : $rescli->habitaciones;
+                                        $habitacion_id = array_values(is_string($rescli->habitaciones) ? json_decode($rescli->habitaciones, true) : ($rescli->habitaciones ?? []));
                                         $accesorio_id = is_string($rescli->accesorios) ? json_decode($rescli->accesorios, true) : $rescli->accesorios;
                                         $servicio_id = is_string($rescli->servicios) ? json_decode($rescli->servicios, true) : $rescli->servicios;
                                     @endphp
@@ -499,7 +486,7 @@
                                     <div class="tab-content py-3">
                                         <div class="tab-pane fade show active" id="tourtickets" role="tabpanel">
                                             <div class="col-md-12">
-                                            <div class="form-check">
+                                                <div class="form-check">
                                                     <input class="form-check-input" type="checkbox" id="select_all_tickets">
                                                     <label class="form-check-label" for="select_all_tickets">
                                                         <strong>Seleccionar todos</strong>
@@ -522,37 +509,40 @@
                                         </div>
 
                                         <div class="tab-pane fade" id="tourhoteles" role="tabpanel">
-                                        @php
-                                                $hotelesSeleccionados = json_decode($tour->hoteles, true);
-                                         @endphp
-                                            @foreach($hotelesSeleccionados as $key => $hotelIds)
+                                            @php $contadorDia = 1; @endphp
+                                            @foreach($hotelesSeleccionados as $hotelIds)
+                                                @php
+                                                    $habitacionSeleccionada = collect($habitacion_id)->firstWhere('dia', $contadorDia);
+                                                @endphp
+                                            
                                                 <div class="row g-3">
                                                     <div class="col-md-12 form-check">
-                                                        <label class="form-label" for="noche_{{ $key }}">
-                                                            Dia {{ $key }}
+                                                        <label class="form-label" for="noche_{{ $contadorDia }}">
+                                                            Día {{ $contadorDia }}
                                                         </label>
-                                                        @if($hoteles) 
-                                                        @foreach ($hoteles as $hotel)
-                                                            @if(in_array($hotel->id, $hotelIds)) 
+                                            
+                                                        @foreach($hoteles as $hotel)
+                                                            @if(in_array($hotel->id, $hotelIds))
                                                                 <div class="form-check">
-                                                                    <!-- Checkbox para el hotel -->
-                                                                    <input class="form-check-input" style="display: none;" type="checkbox" value="{{ $hotel->id }}" id="hotel_{{ $hotel->id }}_{{ $key }}" />
-                                                                    <label class="form-check-label" for="hotele_{{ $hotel->id }}_{{ $key }}">
+                                                                    <input class="form-check-input" style="display: none;" type="checkbox" value="{{ $hotel->id }}" id="hotel_{{ $hotel->id }}_{{ $contadorDia }}" />
+                                                                    <label class="form-check-label" for="hotel_{{ $hotel->id }}_{{ $contadorDia }}">
                                                                         {{ $hotel->titulo }}
                                                                     </label>
+                                            
                                                                     @foreach($habitaciones->where('hotel_id', $hotel->id) as $habitacion)
-                                                                        <div class="form-check form_habi{{ $habitacion->id }}{{ $key }}">
-                                                                            <!-- ID único para los checkbox buttons y name basado en el día para selección única -->
-                                                                            <input class="form-check-input habitacion-checkbox" type="checkbox" value="{{ $habitacion->id }}"
-                                                                                id="form_habi_{{ $hotel->id }}_{{ $habitacion->id }}_dia{{ $key }}"
-                                                                                name="habitacion_dia_{{ $key }}"
+                                                                        <div class="form-check form_habi{{ $habitacion->id }}{{ $contadorDia }}">
+                                                                            <input class="form-check-input habitacion-checkbox" type="radio"
+                                                                                name="habitacion_dia_{{ $contadorDia }}"
+                                                                                id="form_habi_{{ $hotel->id }}_{{ $habitacion->id }}_dia{{ $contadorDia }}"
+                                                                                value="{{ $habitacion->id }}"
                                                                                 data-name="{{ $habitacion->titulo }}"
                                                                                 data-hnac="{{ number_format($habitacion->nacionales, 2, '.', '') }}"
                                                                                 data-hext="{{ number_format($habitacion->extranjeros, 2, '.', '') }}"
                                                                                 data-tit="{{ $hotel->titulo }}"
-                                                                                @if($rescli->habitaciones) @foreach($habitaciones as $habit) @if($habit["id"] == $habitacion->id) checked @endif @endforeach @endif />
-
-                                                                            <label class="form-check-label" for="form_habi_{{ $hotel->id }}_{{ $habitacion->id }}_dia{{ $key }}">
+                                                                                data-dia="{{ $contadorDia }}"
+                                                                                @if($habitacionSeleccionada && $habitacionSeleccionada['id'] == $habitacion->id) checked @endif
+                                                                            />
+                                                                            <label class="form-check-label" for="form_habi_{{ $hotel->id }}_{{ $habitacion->id }}_dia{{ $contadorDia }}">
                                                                                 {{ $habitacion->titulo }}
                                                                                 <span class="seccion-mexico hidden">Bs. {{ number_format($habitacion->nacionales, 2, '.', '') }}</span>
                                                                                 <span class="seccion-otros hidden">Bs. {{ number_format($habitacion->extranjeros, 2, '.', '') }}</span>
@@ -562,13 +552,13 @@
                                                                 </div>
                                                             @endif
                                                         @endforeach
-                                                        @endif
                                                     </div>
                                                 </div>
+                                            
+                                                @php $contadorDia++; @endphp
                                             @endforeach
-
                                         </div>
-
+                                        
                                         <div class="tab-pane fade" id="touraccesorios" role="tabpanel">
                                             <div class="col-md-12">
                                            
@@ -735,7 +725,7 @@
             const checkboxesTickets = document.querySelectorAll("input[type='checkbox'][id^='ticket_']");
             const checkboxesAccesorios = document.querySelectorAll("input[type='checkbox'][id^='accesorio_']");
             const checkboxesServicios = document.querySelectorAll("input[type='checkbox'][id^='turista_']");
-            const checkboxesHabitaciones = document.querySelectorAll("input[type='checkbox'][id^='form_habi_']");
+            const checkboxesHabitaciones = document.querySelectorAll("input[type='radio'][id^='form_habi_']");
 
             let totalTickets = 0;
             let totalAccesorios = 0;
@@ -780,6 +770,7 @@
 
                 // Recalcula el total de tickets al cambiar la nacionalidad
                 updateCheckboxTotal();
+                updateHabitacionTotal();     // ✅ ¡necesitamos esto!
             }
 
             nacionalidadSelect.addEventListener("change", handleNacionalidadChange);
@@ -929,8 +920,10 @@
             function updateSubtotal() {
                 const cantidad = parseInt(cantPerInput.value) || 0;
                 const subtotal = cantidad * preUni;
-                tourSbt.innerText = `Bs. ${(subtotal + totalTickets + totalAccesorios).toFixed(2)}`;
-                tourTotal.value = `${(subtotal + totalTickets + totalAccesorios).toFixed(2)}`;
+                const totalSum = subtotal + totalTickets + totalAccesorios + totalServicios + totalHabitaciones;
+
+                tourSbt.innerText = `Bs. ${totalSum.toFixed(2)}`;
+                tourTotal.value = `${totalSum.toFixed(2)}`;
                 cantPersDisplay.innerText = `${cantidad} ${cantidad === 1 ? 'persona' : 'personas'}`;
             }
 
@@ -984,14 +977,15 @@
                     }));
                 document.getElementById("tickets_seleccionados").value = JSON.stringify(selectedTickets);
 
-                // Habitaciones seleccionadas
+                // Habitaciones seleccionadas con día
                 const selectedRooms = Array.from(checkboxesHabitaciones)
-                    .filter(radio => radio.checked)
-                    .map(radio => ({
-                        id: radio.value,
-                        name: radio.dataset.name,
-                        price: parseFloat(nacionalidadSelect.value === "BO" ? radio.dataset.hnac : radio.dataset.hext)
-                    }));
+                .filter(radio => radio.checked)
+                .map(radio => ({
+                    id: radio.value,
+                    name: radio.dataset.name,
+                    price: parseFloat(nacionalidadSelect.value === "BO" ? radio.dataset.hnac : radio.dataset.hext),
+                    dia: parseInt(radio.dataset.dia) // 👈 Esta línea asegura que el día se guarda bien
+                }));
                 document.getElementById("habitaciones_seleccionadas").value = JSON.stringify(selectedRooms);
 
                 // Accesorios seleccionados
@@ -1025,9 +1019,12 @@
             document.addEventListener("DOMContentLoaded", updateSelectedItems);
 
             handleNacionalidadChange();
+            updateSelectedItems();
             updateCheckboxTotal();
             updateAccessoryTotal();
             updateServicioTotal();
+            updateHabitacionTotal(); // <- aquí
+
         });
     </script>
 
@@ -1104,59 +1101,4 @@
         // Ejecutar la función al cargar la página
         ekUpload();
     </script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const continuarButtons = document.querySelectorAll(".continuar");
-            const regresarButtons = document.querySelectorAll(".regresar");
-
-            continuarButtons.forEach(button => {
-                button.addEventListener("click", function () {
-                    const currentSection = button.closest(".fase");
-                    const nextSectionId = button.getAttribute("data-next");
-
-                    if (nextSectionId) {
-                        currentSection.style.display = "none"; // Oculta la sección actual
-                        document.getElementById(nextSectionId).style.display = "block"; // Muestra la siguiente sección
-                    }
-                });
-            });
-
-            regresarButtons.forEach(button => {
-                button.addEventListener("click", function () {
-                    const currentSection = button.closest(".fase");
-                    const prevSectionId = button.getAttribute("data-prev");
-
-                    if (prevSectionId) {
-                        currentSection.style.display = "none"; // Oculta la sección actual
-                        document.getElementById(prevSectionId).style.display = "block"; // Muestra la sección anterior
-                    }
-                });
-            });
-        });
-    </script>
-    <script>
-            function continuar2(){ 
-                const continuarButtons = document.querySelectorAll(".continuar2");
-                const regresarButtons = document.querySelectorAll(".regresar2");
-                const requiredFields = document.querySelectorAll("#segunda_fase [required]");
-                let allFilled = true;
-                                        requiredFields.forEach(field => {
-                                            if (!field.value) {
-                                                allFilled = false;
-                                            }
-                                        });
-                const valorFinal = allFilled;
-                if(valorFinal){
-                    document.getElementById('segunda_fase').style.display = "none"; // Oculta la sección actual
-                            document.getElementById('tercera_fase').style.display = "block";
-                }else{
-                    alert('Por favor llene los campos obligatorios *');
-                }
-            }
-
-            function regresar2(){
-                document.getElementById('segunda_fase').style.display = "none"; // Oculta la sección actual
-                document.getElementById('primera_fase').style.display = "block";
-            }
-    </script>     
 @endsection

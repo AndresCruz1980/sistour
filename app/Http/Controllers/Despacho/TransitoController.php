@@ -18,18 +18,11 @@ use App\Models\Propietario\Chofer;
 use App\Models\Propietario\Cocinero;
 use App\Models\Propietario\Guia;
 use App\Models\Propietario\Traductor;
-use App\Models\Servicio\Ticket;
-use App\Models\Servicio\Turista;
-use App\Models\Servicio\Accesorio;
-use App\Models\Servicio\Hotel;
-use App\Models\Servicio\Habitacion;
-use App\Models\Configuracion\Alergia;
-use App\Models\Configuracion\Alimentacion;
-use App\Models\Configuracion\Link;
-use App\Models\Configuracion\Online;
-use App\Models\Configuracion\Qr;
-use DB;
 use App\Models\Despacho\Gestion;
+use Barryvdh\DomPDF\Facade\Pdf;
+
+
+use DB;
 
 class TransitoController extends Controller
 {
@@ -61,20 +54,64 @@ class TransitoController extends Controller
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        if($request->pagina == "transitos"){
-            
-        }else{
-            $res = Reserva::find($request->reserva_id);
-            $res->estado = 4;
-            $res->save();
-    
-            return redirect('despachos/transitos/'.$request->reserva_id);
+        if ($request->pagina === "transitos") {
+            // lógica futura aquí
+        } else {
+            $reserva = Reserva::findOrFail($request->reserva_id);
+            $reserva->estado = 4;
+            $reserva->save();
+
+            $gestion = Gestion::where('reserva_id', $reserva->id)->first();
+
+            $resclis = Resercliente::where('reserva_id', $reserva->id)->get();
+
+            // Mapeamos todos los turistas con sus campos
+            $resclis_mapeados = $resclis->map(function ($t) {
+                return [
+                    'nombres'      => $t->nombres,
+                    'apellidos'    => $t->apellidos,
+                    'documento'    => $t->documento,
+                    'nacionalidad' => $t->nacionalidad,
+                    'edad'         => $t->edad,
+                    'celular'      => $t->celular,
+                    'correo'       => $t->correo,
+                    'nota'         => $t->nota,
+                    'nacionalidad' => $t->nacionalidad,
+
+
+                    'tickets'      => $this->decodeField($t->tickets),
+                    'habitaciones' => $this->decodeField($t->habitaciones),
+                    'accesorios'   => $this->decodeField($t->accesorios),
+                    'servicios'    => $this->decodeField($t->servicios),
+
+                    'alergias'     => $this->decodeField($t->alergias),
+                    'alimentacion' => $this->decodeField($t->alimentacion),
+                ];
+            });
+
+            // Generar PDF
+            $pdf = PDF::loadView('pdf.resumen_transito', [
+                'reserva' => $reserva,
+                'resclis' => $resclis_mapeados,
+                'gestion' => $gestion,
+            ]);
+
+            $pdf->save(public_path("despachos/transito_{$reserva->codigo}.pdf"));
+
+            return redirect('despachos/transitos/' . $reserva->id);
         }
+    }
+
+
+    private function decodeField($value)
+    {
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+        return is_array($value) ? $value : [];
     }
 
     /**
@@ -82,29 +119,36 @@ class TransitoController extends Controller
      */
     public function show($id)
     {
-        $reserva = Reserva::find($id);
-        $resclis = Resercliente::where('reserva_id', $id)->get(); // Filtrar Resercliente por reserva_id
+        $reserva = Reserva::findOrFail($id);
         $gestion = Gestion::where('reserva_id', $id)->first();
-        $tours = Tour::all();
-        $hottus = HotelTour::all();
-        $categorias = Categoria::all();
-        $servicios = Servicio::all();
-        $alergias = Alergia::all();
-        $alimentos = Alimentacion::all();
-        $habitaciones = Habitacion::all();
-        $links = Link::all();
-        $onlines = Online::all();
-        $qrs = Qr::all();
-        $guias = Guia::all();
-        $traductors = Traductor::all();
-        $chofers = Chofer::all();
-        $cocineros = Cocinero::all();
-        $propietarios = Propietario::all();
-        $vagonetas = Vagoneta::all();
-        $bicicletas = Bicicleta::all();
-        $caballos = Caballo::all();
-        
-        return view('despachos.transitos.show', compact('gestion', 'caballos', 'bicicletas', 'vagonetas', 'propietarios', 'cocineros', 'chofers', 'traductors', 'guias', 'resclis', 'reserva', 'links', 'onlines', 'qrs', 'habitaciones', 'alimentos', 'alergias', 'tours', 'hottus', 'categorias', 'servicios'));
+
+        $resclis = Resercliente::where('reserva_id', $id)->get();
+
+        // ✅ Mapeamos cada turista con sus valores decodificados
+        $resclis = $resclis->map(function ($t) {
+            $decode = fn($f) => is_string($f) ? json_decode($f, true) ?? [] : ($f ?? []);
+
+            return (object) [
+                'nombres'      => $t->nombres,
+                'apellidos'    => $t->apellidos,
+                'documento'    => $t->documento,
+                'nacionalidad' => $t->nacionalidad,
+                'edad'         => $t->edad,
+                'celular'      => $t->celular,
+                'correo'       => $t->correo,
+                'nota'         => $t->nota,
+                'esPrincipal'  => $t->esPrincipal,
+
+                'tickets'      => $decode($t->tickets),
+                'habitaciones' => $decode($t->habitaciones),
+                'accesorios'   => $decode($t->accesorios),
+                'servicios'    => $decode($t->servicios),
+                'alergias'     => $decode($t->alergias),
+                'alimentacion' => $decode($t->alimentacion),
+            ];
+        });
+
+        return view('despachos.transitos.show', compact('reserva', 'resclis', 'gestion'));
     }
 
     /**

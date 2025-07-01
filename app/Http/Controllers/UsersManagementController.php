@@ -109,7 +109,7 @@ class UsersManagementController extends Controller
         $user->attachRole($request->input('role'));
         $user->save();
 
-        return redirect('users')->with('success', trans('usersmanagement.createSuccess'));
+        /*return redirect('users')->with('success', trans('usersmanagement.createSuccess'));*/
     }
 
     /**

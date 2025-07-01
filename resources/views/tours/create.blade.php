@@ -20,7 +20,7 @@
 
                     <div class="form-group mb-2 mt-2 col-md-6">
                         <label class="mb-2">Descripción</label>
-                        <textarea class="form-control form-control-solid" id="descripcion" name="descripcion" rows="5" required></textarea>
+                        <textarea class="form-control form-control-solid" id="descripcion" name="descripcion" rows="5"></textarea>
                     </div>
 
                     <div class="form-group mb-2 mt-2 col-md-6">
@@ -102,7 +102,7 @@
                 <div class="row g-3 pt-3 pb-2 col-md-12">
                     <div class="form-group mb-2 mt-2 col-md-6">
                         <label class="mb-2">Tickets</label>
-                        <select class="form-select" id="tickets" name="tickets[]" type="select" required data-placeholder="Seleccionar" multiple>
+                        <select class="form-select" id="tickets" name="tickets[]" type="select" data-placeholder="Seleccionar" multiple>
                             @foreach($tickets as $ticket)
                                 @if($ticket->estatus == "1")
                                     <option value="{{ $ticket->id }}">{{ $ticket->titulo }}</option>
@@ -113,7 +113,7 @@
 
                     <div class="form-group mb-2 mt-2 col-md-6">
                         <label class="mb-2">Alquiler de accesorios</label>
-                        <select class="form-select" id="accesorios" name="accesorios[]" type="select" required data-placeholder="Seleccionar" multiple>
+                        <select class="form-select" id="accesorios" name="accesorios[]" type="select" data-placeholder="Seleccionar" multiple>
                             @foreach($accesorios as $accesorio)
                                 @if($accesorio->estatus == "1")
                                     <option value="{{ $accesorio->id }}">{{ $accesorio->titulo }}</option>
@@ -124,7 +124,7 @@
 
                     <div class="form-group mb-2 mt-2 col-md-6">
                         <label class="mb-2">Alquiler de servicios</label>
-                        <select class="form-select" id="turistas" name="turistas[]" type="select" required data-placeholder="Seleccionar" multiple>
+                        <select class="form-select" id="turistas" name="turistas[]" type="select" data-placeholder="Seleccionar" multiple>
                             @foreach($turistas as $turista)
                                 @if($turista->estatus == "1")
                                     <option value="{{ $turista->id }}">{{ $turista->titulo }}</option>

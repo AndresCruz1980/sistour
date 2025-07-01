@@ -147,7 +147,7 @@
 @section('content')
     <link href="{{ asset('assets/plugins/bs-stepper/css/bs-stepper.css') }}" rel="stylesheet" /><!--public/-->
     
-    <form action="{{ route('reservas.store') }}" class="uploader" method="POST" id="file-upload-form" enctype="multipart/form-data">
+    <form action="{{ route('reservas.store.external') }}" method="POST" class="uploader" id="file-upload-form" enctype="multipart/form-data">
         @csrf
 
         <div class="row">
@@ -169,6 +169,8 @@
                             <input type="hidden" id="created_at" name="created_at" value="{{ $newDate }}" />
                             <input type="hidden" id="tour_id" name="tour_id" value="{{ $tour->id }}" />
                             <input type="hidden" id="estatus" name="estatus" value="1" />
+                            <input type="hidden" value="user_external" id="pagina" name="pagina" />
+
 
                             <h5 class="card-title text-black text-center"><b>{{ $tour->titulo }}</b></h5>
 
@@ -395,47 +397,49 @@
                                         $hotelesSeleccionados = json_decode($tour->hoteles, true);
                                         use App\Models\Servicio\Hotel;
                                     @endphp
-
+@if (is_array($hotelesSeleccionados))
                                     @foreach($hotelesSeleccionados as $key => $hotelIds)
-                                        <div class="row g-3">
-                                            <div class="col-md-12 form-check">
-                                                <label class="form-label" for="noche_{{ $key }}">
-                                                    Dia {{ $key }}
-                                                </label>
+                                    <div class="row g-3">
+                                        <div class="col-md-12 form-check">
+                                            <label class="form-label" for="noche_{{ $key }}">
+                                                Dia {{ $key }}
+                                            </label>
 
-                                                @foreach ($hoteles as $hotel)
-                                                    @if(in_array($hotel->id, $hotelIds)) 
-                                                        <div class="form-check">
-                                                            <!-- Checkbox para el hotel -->
-                                                            <input class="form-check-input" type="checkbox" value="{{ $hotel->id }}" id="hotel_{{ $hotel->id }}_{{ $key }}" />
-                                                            <label class="form-check-label" for="hotele_{{ $hotel->id }}_{{ $key }}">
-                                                                {{ $hotel->titulo }}
-                                                            </label>
+                                            @foreach ($hoteles as $hotel)
+                                                @if(in_array($hotel->id, $hotelIds)) 
+                                                    <div class="form-check">
+                                                        <!-- Checkbox para el hotel -->
+                                                        <input class="form-check-input" type="checkbox" value="{{ $hotel->id }}" id="hotel_{{ $hotel->id }}_{{ $key }}" />
+                                                        <label class="form-check-label" for="hotele_{{ $hotel->id }}_{{ $key }}">
+                                                            {{ $hotel->titulo }}
+                                                        </label>
 
-                                                            @foreach($habitaciones->where('hotel_id', $hotel->id) as $habitacion)
-                                                                <div class="form-check form_habi{{ $habitacion->id }}{{ $key }}">
-                                                                    <!-- ID único para los checkbox buttons y name basado en el día para selección única -->
-                                                                    <input class="form-check-input habitacion-checkbox" type="checkbox" value="{{ $habitacion->id }}"
-                                                                        id="form_habi_{{ $hotel->id }}_{{ $habitacion->id }}_dia{{ $key }}"
-                                                                        name="habitacion_dia_{{ $key }}"
-                                                                        data-name="{{ $habitacion->titulo }}"
-                                                                        data-hnac="{{ number_format($habitacion->nacionales, 2, '.', '') }}"
-                                                                        data-hext="{{ number_format($habitacion->extranjeros, 2, '.', '') }}"
-                                                                        data-tit="{{ $hotel->titulo }}" />
+                                                        @foreach($habitaciones->where('hotel_id', $hotel->id) as $habitacion)
+                                                            <div class="form-check form_habi{{ $habitacion->id }}{{ $key }}">
+                                                                <!-- ID único para los radio buttons y name basado en el día para selección única -->
+                                                                <input class="form-check-input" type="radio" value="{{ $habitacion->id }}"
+                                                                    id="form_habi_{{ $hotel->id }}_{{ $habitacion->id }}_dia{{ $key }}"
+                                                                    name="habitacion_dia_{{ $key }}"
+                                                                    data-name="{{ $habitacion->titulo }}"
+                                                                    data-hnac="{{ number_format($habitacion->nacionales, 2, '.', '') }}"
+                                                                    data-hext="{{ number_format($habitacion->extranjeros, 2, '.', '') }}" 
+                                                                    data-dia="{{ $key }}"  />
 
-                                                                    <label class="form-check-label" for="form_habi_{{ $hotel->id }}_{{ $habitacion->id }}_dia{{ $key }}">
-                                                                        {{ $habitacion->titulo }}
-                                                                        <span class="seccion-mexico hidden">Bs. {{ number_format($habitacion->nacionales, 2, '.', '') }}</span>
-                                                                        <span class="seccion-otros hidden">Bs. {{ number_format($habitacion->extranjeros, 2, '.', '') }}</span>
-                                                                    </label>
-                                                                </div>
-                                                            @endforeach
-                                                        </div>
-                                                    @endif
-                                                @endforeach
-                                            </div>
+
+                                                                <label class="form-check-label" for="form_habi_{{ $hotel->id }}_{{ $habitacion->id }}_dia{{ $key }}">
+                                                                    {{ $habitacion->titulo }}
+                                                                    <span class="seccion-mexico hidden">Bs. {{ number_format($habitacion->nacionales, 2, '.', '') }}</span>
+                                                                    <span class="seccion-otros hidden">Bs. {{ number_format($habitacion->extranjeros, 2, '.', '') }}</span>
+                                                                </label>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                                            @endforeach
                                         </div>
+                                    </div>
                                     @endforeach
+@endif                                    
                                 </div>
                                 <div class="tab-pane fade" id="touraccesorios" role="tabpanel">
                                     <div class="col-md-12">
@@ -608,7 +612,7 @@
 
                             <dl class="col-md-12 row tickets_cont" id="tickets_cont" style="display: none;">
                                 <dt class="col-sm-12">
-                                    <span class="btn btn-inverse-success mb-3 col-md-12">Tickers</span>
+                                    <span class="btn btn-inverse-success mb-3 col-md-12">Tickets</span>
                                 </dt>
 
                                 <dt class="col-sm-5" id="tic_name"></dt>
@@ -707,7 +711,7 @@
             const checkboxesTickets = document.querySelectorAll("input[type='checkbox'][id^='ticket_']");
             const checkboxesAccesorios = document.querySelectorAll("input[type='checkbox'][id^='accesorio_']");
             const checkboxesServicios = document.querySelectorAll("input[type='checkbox'][id^='turista_']");
-            const checkboxesHabitaciones = document.querySelectorAll("input[type='checkbox'][id^='form_habi_']");
+            const checkboxesHabitaciones = document.querySelectorAll("input[type='radio'][id^='form_habi_']");
 
             let totalTickets = 0;
             let totalAccesorios = 0;
@@ -844,13 +848,10 @@
 
                 checkboxesHabitaciones.forEach(checkbox => {
                     if (checkbox.checked) {
-                        const hotelName = checkbox.dataset.tit; // Asegúrate de usar el dataset.tit
-                        const roomName = checkbox.dataset.name;
                         const price = parseFloat(nacionalidadSelect.value === "BO" ? checkbox.dataset.hnac : checkbox.dataset.hext) || 0;
-
                         totalHabitaciones += price;
 
-                        names += `${hotelName}: ${roomName}<br>`;
+                        names += `${checkbox.dataset.name}<br>`;
                         prices += `Bs. ${price.toFixed(2)}<br>`;
                     }
                 });
@@ -863,7 +864,7 @@
                     habitacionesCont.style.display = "none";
                 }
 
-                updateTotal(); // Asegúrate de actualizar el total
+                updateTotal();
             }
 
             // Función para calcular y actualizar el total acumulado en tourSbt
@@ -918,8 +919,15 @@
             function updateSubtotal() {
                 const cantidad = parseInt(cantPerInput.value) || 0;
                 const subtotal = cantidad * preUni;
-                tourSbt.innerText = `Bs. ${(subtotal + totalTickets + totalAccesorios).toFixed(2)}`;
-                tourTotal.value = `${(subtotal + totalTickets + totalAccesorios).toFixed(2)}`;
+                
+                tourSbt.innerText = `Bs. ${subtotal.toFixed(2)}`;
+                
+                // Guardar solo el valor base en pre_tot
+                document.getElementById("pre_tot").value = subtotal.toFixed(2);
+
+                // El total final sí puede sumar los adicionales
+                tourTotal.value = `${(subtotal + totalTickets + totalAccesorios + totalServicios + totalHabitaciones).toFixed(2)}`;
+
                 cantPersDisplay.innerText = `${cantidad} ${cantidad === 1 ? 'persona' : 'personas'}`;
             }
 
@@ -979,7 +987,8 @@
                     .map(radio => ({
                         id: radio.value,
                         name: radio.dataset.name,
-                        price: parseFloat(nacionalidadSelect.value === "BO" ? radio.dataset.hnac : radio.dataset.hext)
+                        price: parseFloat(nacionalidadSelect.value === "BO" ? radio.dataset.hnac : radio.dataset.hext),
+                        dia: parseInt(radio.dataset.dia) // este es el valor clave que ya se está agregando
                     }));
                 document.getElementById("habitaciones_seleccionadas").value = JSON.stringify(selectedRooms);
 

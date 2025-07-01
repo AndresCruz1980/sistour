@@ -28,6 +28,7 @@ use App\Models\Tour\Vip;
 use App\Models\Tour;
 use App\Models\Reserva;
 use App\Models\Venta\Pago;
+use App\Models\Reserva\Resercliente;
 
 class EstatusController extends Controller
 {
@@ -427,21 +428,44 @@ class EstatusController extends Controller
             
             return back();
         }
-
-        if($request->pagina == "pagos"){
-            if($request->estatus == 1){
-                $mensaje = "success";
-                $estados = "Pago restaurado";
-            }elseif($request->estatus == 2){
-                $mensaje = "danger";
-                $estados = "Pago eliminado";
+        if ($request->pagina == "pagos") {
+            $pago = Pago::find($id);
+        
+            if (!$pago) {
+                return back()->with('error', 'Pago no encontrado.');
             }
-
-            $tou = Pago::find($id);
-            $tou->estatus = 2;
-            $tou->save();
+        
+            // Buscar el Resercliente relacionado
+            $rescli = Resercliente::find($pago->rescli_id);
+        
+            if ($rescli && $request->estatus == 2 && $pago->estatus == 1) {
+                // Solo restar si estaba activo y se está eliminando
+                $rescli->pagado -= $pago->conversion;
+                if ($rescli->pagado < 0) {
+                    $rescli->pagado = 0; // Protección contra valores negativos
+                }
+                $rescli->save();
+            }
+        
+            $pago->estatus = $request->estatus;
+            $pago->save();
+        
+            $mensaje = $request->estatus == 1 ? "success" : "danger";
+            $estadoMensaje = $request->estatus == 1 ? "Pago restaurado" : "Pago eliminado";
+        
+            return back()->with($mensaje, $estadoMensaje);
+        }
+        if ($request->pagina == "estado_reserva") {
+            $reserva = Reserva::find($id);
             
-            return back();
+            if (!$reserva) {
+                return back()->with('danger', 'Reserva no encontrada.');
+            }
+        
+            $reserva->estado = $request->estado ?? 2; // Si no viene, se pone 2 por defecto
+            $reserva->save();
+        
+            return redirect()->to('/ventas/reservas/' . $id)->with('success', 'Estado de la reserva actualizado.');
         }
     }
 

@@ -104,7 +104,7 @@
                                                 @include('configuracion.idiomas.edit')
                                             </form>
 
-                                            <form action="{{ route('estatus.update', $idioma->id) }}" class="ms-1" method="POST">
+                                            <form action="{{ route('confidiomas.destroy', $idioma->id) }}" class="ms-1" method="POST">
                                                 @csrf
                                                 @method('PUT')
 

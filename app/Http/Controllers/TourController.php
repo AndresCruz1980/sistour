@@ -20,16 +20,16 @@ class TourController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        $tours = Tour::all();
-        $hottus = HotelTour::all();
+    { 
+        
+        $tours = Tour::all(); 
+        $hottus = HotelTour::all(); 
         $hoteles = Hotel::all();
         $categorias = Categoria::all();
-        $servicios = Servicio::all();
+        $servicios = Servicio::where('estatus',1)->get();
         $tickets = Ticket::all();
         $turistas = Turista::all();
         $accesorios = Accesorio::all();
-        
         return view('tours.index', compact('tours', 'hottus', 'hoteles', 'categorias', 'servicios', 'tickets', 'turistas', 'accesorios'));
     }
 
@@ -64,12 +64,12 @@ class TourController extends Controller
      */
     public function store(Request $request)
     {
-        $serv_tour = json_encode($request->serv_tour);
-        //$serv_cli = json_encode($request->serv_cli);
-        $tickets = json_encode($request->tickets);
-        $hoteles = json_encode($request->hoteles);
-        $accesorios = json_encode($request->accesorios);
-        $turistas = json_encode($request->turistas);
+        $serv_tour = is_array($request->serv_tour) ? json_encode($request->serv_tour) : json_encode([]);
+        //$serv_cli = is_array($request->serv_cli) ? json_encode($request->serv_cli) : json_encode([]);
+        $tickets = is_array($request->tickets) ? json_encode($request->tickets) : json_encode([]);
+        $hoteles = is_array($request->hoteles) ? json_encode($request->hoteles) : json_encode([]);
+        $accesorios = is_array($request->accesorios) ? json_encode($request->accesorios) : json_encode([]);
+        $turistas = is_array($request->turistas) ? json_encode($request->turistas) : json_encode([]);
         
         $in = [];
         $in['codigo'] = $request->string('codigo');
@@ -151,12 +151,19 @@ class TourController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $serv_tour = json_encode($request->serv_tour);
+        $serv_tour = is_array($request->serv_tour) ? json_encode($request->serv_tour) : json_encode([]);
+        //$serv_cli = is_array($request->serv_cli) ? json_encode($request->serv_cli) : json_encode([]);
+        $tickets = is_array($request->tickets) ? json_encode($request->tickets) : json_encode([]);
+        $hoteles = is_array($request->hoteles) ? json_encode($request->hoteles) : json_encode([]);
+        $accesorios = is_array($request->accesorios) ? json_encode($request->accesorios) : json_encode([]);
+        $turistas = is_array($request->turistas) ? json_encode($request->turistas) : json_encode([]);
+
+        /*$serv_tour = json_encode($request->serv_tour);
         //$serv_cli = json_encode($request->serv_cli);
         $tickets = json_encode($request->tickets);
         $hoteles = json_encode($request->hoteles);
         $accesorios = json_encode($request->accesorios);
-        $turistas = json_encode($request->turistas);
+        $turistas = json_encode($request->turistas);*/
         
         $in = [];
         $in['codigo'] = $request->string('codigo');

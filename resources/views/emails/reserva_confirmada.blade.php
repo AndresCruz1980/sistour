@@ -63,6 +63,11 @@
             text-align: center;
             padding-top: 15px;
         }
+        li {
+            list-style: none;
+            margin: 0;
+            text-transform: center;
+        }
         @media only screen and (max-width: 640px) {
             .container {
                 width: 90%;
@@ -72,6 +77,23 @@
                 padding: 10px 15px;
             }
         }
+
+        ul.turistas-lista {
+            padding: 0;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        ul.turistas-lista li {
+            list-style: none;
+            margin-bottom: 12px;
+        }
+
+        ul.turistas-lista li a.button {
+            margin: auto;
+            display: inline-block;
+        }
+
     </style>
 </head>
 <body>
@@ -88,16 +110,15 @@
                         <p><strong>Fecha del Tour:</strong> {{ $data['fecha_reserva'] }}</p>
                         <p><strong>Cantidad de Personas:</strong> {{ $data['cantidad_personas'] }}</p>
                         <p><strong>Monto Pagado:</strong> Bs. {{ number_format($data['monto_pagado'], 2, '.', '') }}</p>
-                        <p><strong>Saldo Pendiente:</strong> Bs. {{ number_format($data['saldo_pendiente'], 2, '.', '') }}</p>
+                        <p><strong>Total c/u:</strong> Bs. {{ number_format($data['total'], 2, '.', '') }}</p>
                         <p><strong>Estado:</strong> {{ $data['estado'] }}</p>
                     </div>
 
-                    @if(count($data['turistas_adicionales']) > 0)
+                    @if(count($data['turistas_adicionales']) > 0 && $data['pagina'] != 'resclis')
                         <p>Los siguientes turistas adicionales deben completar sus datos:</p>
-                        <ul>
+                        <ul class="turistas-lista">
                             @foreach($data['turistas_adicionales'] as $index => $turista)
                                 <li>
-                                    {{ $turista['nombre'] }} {{ $turista['apellido'] }}
                                     <a href="{{ $turista['link'] }}" class="button">
                                         Completar Datos {{ $index + 1 }}
                                     </a>

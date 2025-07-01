@@ -117,6 +117,14 @@
             <div class="menu-title">Clientes</div>
         </a>
     </li>
+    <li class="{{ (request()->is('authorizations*')) ? 'mm-active' : '' }}">
+        <a href="{{ url('authorizations') }}">
+            <div class="parent-icon">
+                <i class="bx bx-layer"></i>
+            </div>
+            <div class="menu-title">Autorizaciones</div>
+        </a>
+    </li> 
 
     <li class="{{ (request()->is('prestatario*')) ? 'mm-active' : '' }}">
         <a href="javascript:;" class="has-arrow" aria-expanded="true">
@@ -263,23 +271,13 @@
 
         <ul>
             <li>
-                <a href="{{ url('caja/ingresos') }}" aria-expanded="true">
-                    <i class="bx bx-radio-circle"></i>
-                    Ingresos
+                <a href="{{ route('caja.index') }}">
+                    <i class="bx bx-folder-open"></i> Apertura / Cierre
                 </a>
             </li>
-
             <li>
-                <a href="{{ url('caja/gastos') }}" aria-expanded="true">
-                    <i class="bx bx-radio-circle"></i>
-                    Gastos
-                </a>
-            </li>
-
-            <li>
-                <a href="{{ url('caja/categorias') }}" aria-expanded="true">
-                    <i class="bx bx-radio-circle"></i>
-                    Categorías
+                <a href="{{ route('caja.movimientos') }}">
+                    <i class="bx bx-transfer"></i> Movimientos
                 </a>
             </li>
         </ul>

@@ -106,7 +106,7 @@
                                                 @include('configuracion.monedas.edit')
                                             </form>
 
-                                            <form action="{{ route('estatus.update', $moneda->id) }}" class="ms-1" method="POST">
+                                            <form action="{{ route('confmonedas.destroy', $moneda->id) }}" class="ms-1" method="POST">
                                                 @csrf
                                                 @method('PUT')
 

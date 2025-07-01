@@ -20,7 +20,7 @@
 
                     <div class="form-group mb-2 mt-2 col-md-6">
                         <label class="mb-2">Descripción</label>
-                        <textarea class="form-control form-control-solid" id="descripcion" name="descripcion" rows="5" required>{{ $tour->descripcion }}</textarea>
+                        <textarea class="form-control form-control-solid" id="descripcion" name="descripcion" rows="5">{{ $tour->descripcion }}</textarea>
                     </div>
 
                     <div class="form-group mb-2 mt-2 col-md-6">
@@ -77,29 +77,36 @@
                                 $serv_tour_id = json_decode($tour->serv_tour);
                             @endphp
 
-                            @foreach($serv_tour_id as $key => $value)
-                                @foreach($servicios as $servicio)
-                                    @if($value == $servicio->id)
-                                        <option selected value="{{ $servicio->id }}">{{ $servicio->titulo }}</option>
-                                    @endif
-                                @endforeach
+@foreach($servicios as $servicio)
+ <option value="{{ $servicio->id }}" 
+     @if(is_array($serv_tour_id) && in_array($servicio->id, $serv_tour_id)) selected @endif>
+       {{ $servicio->titulo }}
+ </option>
+@endforeach
 
-                                @if($value == 100)
-                                    <option selected value="100">Guias</option>
-                                @elseif($value == 101)
-                                    <option selected value="101">Traductores</option>
-                                @elseif($value == 102)
-                                    <option selected value="102">Cocineros</option>
-                                @elseif($value == 103)
-                                    <option selected value="103">Choferes</option>
-                                @elseif($value == 104)
-                                    <option selected value="104">Vagonetas</option>
-                                @elseif($value == 105)
-                                    <option selected value="105">Caballos</option>
-                                @elseif($value == 106)
-                                    <option selected value="106">Bicicletas</option>
-                                @endif
-                            @endforeach
+                                
+                                    <option @if(in_array(100, $serv_tour_id))) selected @endif value="100">Guias</option>
+                                
+                                
+                                
+                                    <option @if(in_array(101, $serv_tour_id))) selected @endif value="101">Traductores</option>
+                                    
+                                
+                                    <option @if(in_array(102, $serv_tour_id))) selected @endif value="102">Cocineros</option>
+                                    
+                                
+                                    <option @if(in_array(103, $serv_tour_id))) selected @endif value="103">Choferes</option>
+                                    
+                                
+                                    <option @if(in_array(104, $serv_tour_id))) selected @endif value="104">Vagonetas</option>
+                                   
+                                
+                                    <option @if(in_array(105, $serv_tour_id))) selected @endif value="105">Caballos</option>
+                                   
+                                
+                                    <option @if(in_array(106, $serv_tour_id))) selected @endif value="106">Bicicletas</option>
+                                
+                            
                         </select>
                     </div>
 
@@ -119,7 +126,7 @@
                         $hotelesSeleccionados = json_decode($tour->hoteles, true);
                         use App\Models\Servicio\Hotel;
                     @endphp
-
+                    @if (is_array($hotelesSeleccionados))
                     @foreach ($hotelesSeleccionados as $key => $hotelIds)
                         <div class="form-group mb-2 mt-2 col-md-6">
                             <label for="hoteles_{{ $key }}">Hotel Día {{ $key }}</label>
@@ -135,56 +142,57 @@
                             <input type="hidden" value="Día {{ $key }}" name="dias[]" />
                         </div>
                     @endforeach
+                    @endif
                 </div>
 
                 <div class="row g-3 pt-3 pb-2 col-md-12">
                     <div class="form-group mb-2 mt-2 col-md-6">
                         <label class="mb-2">Tickets</label>
-                        <select class="form-select tickets" name="tickets[]" type="select" required data-placeholder="Seleccionar" multiple>
-                            @php
-                                $ticket_id = json_decode($tour->tickets);
-                            @endphp
-
-                            @foreach($ticket_id as $key => $value)
-                                @foreach($tickets as $ticket)
-                                    @if($value == $ticket->id)
-                                        <option selected value="{{ $ticket->id }}">{{ $ticket->titulo }}</option>
-                                    @endif
-                                @endforeach
+                        @php
+                            $ticket_id = json_decode($tour->tickets);
+                        @endphp
+                        <select class="form-select tickets" name="tickets[]" type="select" data-placeholder="Seleccionar" multiple>
+                            @foreach($tickets as $ticket)
+                                @if($ticket->estatus == "1")
+                                    <option value="{{ $ticket->id }}" 
+                                        @if(is_array($ticket_id) && in_array($ticket->id, $ticket_id)) selected @endif>
+                                        {{ $ticket->titulo }}
+                                    </option>
+                                @endif
                             @endforeach
                         </select>
                     </div>
 
                     <div class="form-group mb-2 mt-2 col-md-6">
                         <label class="mb-2">Alquiler de accesorios</label>
-                        <select class="form-select accesorios" name="accesorios[]" type="select" required data-placeholder="Seleccionar" multiple>
-                            @php
-                                $accesorio_id = json_decode($tour->accesorios);
-                            @endphp
-
-                            @foreach($accesorio_id as $key => $value)
-                                @foreach($accesorios as $accesorio)
-                                    @if($value == $accesorio->id)
-                                        <option selected value="{{ $accesorio->id }}">{{ $accesorio->titulo }}</option>
-                                    @endif
-                                @endforeach
+                        @php
+                            $accesorio_id = json_decode($tour->accesorios);
+                        @endphp
+                        <select class="form-select accesorios" name="accesorios[]" type="select" data-placeholder="Seleccionar" multiple>
+                            @foreach($accesorios as $accesorio)
+                                @if($accesorio->estatus == "1")
+                                    <option value="{{ $accesorio->id }}" 
+                                        @if(is_array($accesorio_id) && in_array($accesorio->id, $accesorio_id)) selected @endif>
+                                        {{ $accesorio->titulo }}
+                                    </option>
+                                @endif
                             @endforeach
                         </select>
                     </div>
 
                     <div class="form-group mb-2 mt-2 col-md-6">
                         <label class="mb-2">Alquiler de servicios</label>
-                        <select class="form-select turistas" name="turistas[]" type="select" required data-placeholder="Seleccionar" multiple>
-                            @php
-                                $turista_id = json_decode($tour->turistas);
-                            @endphp
-
-                            @foreach($turista_id as $key => $value)
-                                @foreach($turistas as $turista)
-                                    @if($value == $turista->id)
-                                        <option selected value="{{ $turista->id }}">{{ $turista->titulo }}</option>
-                                    @endif
-                                @endforeach
+                        @php
+                            $turista_id = json_decode($tour->turistas);
+                        @endphp
+                        <select class="form-select turistas" name="turistas[]" type="select" data-placeholder="Seleccionar" multiple>
+                            @foreach($turistas as $turista)
+                                @if($turista->estatus == "1")
+                                    <option value="{{ $turista->id }}" 
+                                        @if(is_array($turista_id) && in_array($turista->id, $turista_id)) selected @endif>
+                                        {{ $turista->titulo }}
+                                    </option>
+                                @endif
                             @endforeach
                         </select>
                     </div>
