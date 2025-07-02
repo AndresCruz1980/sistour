@@ -16,7 +16,7 @@
             <div class="col">
                 <div class="card">
                     <a href="{{ URL::to('tienda/' . $tour->id) }}" class="">
-                        <img src="public/assets/imagenes/img_default.jpg" class="card-img-top" alt="...">
+                        <img src="{{ asset('assets/imagenes/img_default.jpg') }}" class="card-img-top" alt="...">
                     </a>
                     
                     <div class="">
