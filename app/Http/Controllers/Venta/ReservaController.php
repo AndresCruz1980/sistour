@@ -117,7 +117,7 @@ class ReservaController extends Controller
 
         // Manejo de archivo
         if ($imagen = $request->file('file')) {
-            $rutaGuardarmg = 'files_documentos';
+            $rutaGuardarmg = config('files.docs_path');
             $nombreOriginal = time() . '_' . $imagen->getClientOriginalName();
             $extension = $imagen->getClientOriginalExtension();
 

@@ -61,7 +61,7 @@ class ReservaController extends Controller
 
         // Manejo del archivo
         if ($imagen = $request->file('file')) {
-            $rutaGuardarmg = 'files_documentos';
+            $rutaGuardarmg = config('files.docs_path');
             $nombreOriginal = time() . '_' . $imagen->getClientOriginalName();
             $extension = $imagen->getClientOriginalExtension();
 
@@ -260,7 +260,7 @@ class ReservaController extends Controller
     private function procesarComprobantePago(Request $request, $reservaId)
     {
         if ($imagen = $request->file('file')) {
-            $rutaGuardarmg = 'files_pagos';
+            $rutaGuardarmg = config('files.pagos_path');
             $nombreOriginal = $imagen->getClientOriginalName();
             $extension = $imagen->getClientOriginalExtension();
             $fotoPago = $nombreOriginal;

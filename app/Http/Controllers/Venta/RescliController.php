@@ -63,7 +63,7 @@ class RescliController extends Controller
             $services = json_decode($request->input('servicios_seleccionados'), true);
 
             if ($imagen = $request->File('file')) {
-                $rutaGuardarmg = 'files_documentos';
+                $rutaGuardarmg = config('files.docs_path');
                 $nombreOriginal = $imagen->getClientOriginalName();
                 $extension = $imagen->getClientOriginalExtension();
 
@@ -221,7 +221,7 @@ class RescliController extends Controller
 
             // Procesar imagen si se sube una nueva
             if ($imagen = $request->file('file')) {
-                $rutaGuardarmg = 'files_documentos';
+                $rutaGuardarmg = config('files.docs_path');
                 $nombreOriginal = time() . '_' . $imagen->getClientOriginalName();
                 $extension = $imagen->getClientOriginalExtension();
 

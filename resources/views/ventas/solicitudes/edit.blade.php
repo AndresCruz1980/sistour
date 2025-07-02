@@ -191,7 +191,7 @@
                                 @endphp
 
                                 @if(in_array(strtolower($fileExtension), ['jpg', 'jpeg', 'png', 'gif']))
-                                    <img src="{{ url('public/files_documentos/' . $reserva->turistas->first()->file) }}" 
+                                    <img src="{{ asset(config('files.docs_path') . '/' . $reserva->turistas->first()->file) }}"
                                         class="img-fluid img-thumbnail"
                                         alt="Pasaporte" data-bs-toggle="modal" data-bs-target="#modalPasaporte">
                                 @elseif($fileExtension === 'pdf')
@@ -216,10 +216,10 @@
                             </div>
                             <div class="modal-body text-center">
                                 @if(in_array(strtolower($fileExtension), ['jpg', 'jpeg', 'png', 'gif']))
-                                    <img src="{{ url('public/files_documentos/' . $reserva->turistas->first()->file) }}" 
+                                    <img src="{{ asset(config('files.docs_path') . '/' . $reserva->turistas->first()->file) }}"
                                         class="img-fluid" alt="Pasaporte">
                                 @elseif($fileExtension === 'pdf')
-                                    <iframe src="{{ url('public/files_documentos/' . $reserva->turistas->first()->file) }}" 
+                                    <iframe src="{{ asset(config('files.docs_path') . '/' . $reserva->turistas->first()->file) }}"
                                             width="100%" height="500px"></iframe>
                                 @endif
                             </div>
@@ -244,7 +244,7 @@
                                 @endphp
 
                                 @if(in_array(strtolower($pagoExtension), ['jpg', 'jpeg', 'png', 'gif']))
-                                    <img src="{{ asset('public/files_pagos/' . $reserva->pago) }}" 
+                                    <img src="{{ asset(config('files.pagos_path') . '/' . $reserva->pago) }}" 
                                         class="img-fluid img-thumbnail"
                                         alt="Comprobante de pago" data-bs-toggle="modal" data-bs-target="#modalComprobante">
                                 @elseif($pagoExtension === 'pdf')
@@ -270,10 +270,10 @@
                                 </div>
                                 <div class="modal-body text-center">
                                     @if(in_array(strtolower($pagoExtension), ['jpg', 'jpeg', 'png', 'gif']))
-                                        <img src="{{ asset('public/files_pagos/' . $reserva->pago) }}" 
+                                        <img src="{{ asset(config('files.pagos_path') . '/' . $reserva->pago) }}" 
                                             class="img-fluid" alt="Comprobante de pago">
                                     @elseif($pagoExtension === 'pdf')
-                                        <iframe src="{{ asset('public/files_pagos/' . $reserva->pago) }}" 
+                                        <iframe src="{{ asset(config('files.pagos_path') . '/' . $reserva->pago) }}" 
                                                 width="100%" height="500px"></iframe>
                                     @endif
                                 </div>
@@ -312,7 +312,7 @@
                                 
                                 @if($reserva->turistas->first()->pago)
                                     <div class="pago_cont col-md-12">
-                                        <img src="{{ asset('files_pagos') }}/{{ $reserva->turistas->first()->pago }}" class="img-fluid" alt="...">
+                                        <img src="{{ asset(config('files.pagos_path') . '/' . $reserva->turistas->first()->pago) }}" class="img-fluid" alt="...">
                                     </div>
                                 @endif
 
