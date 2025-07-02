@@ -241,7 +241,7 @@
         </ul>
     </li>
 
-    <li class="{{ (request()->is('users*')) ? 'mm-active' : '' }}">
+    <li class="{{ (request()->is('miembros*')) ? 'mm-active' : '' }}">
         <a href="javascript:;" class="has-arrow" aria-expanded="true">
             <div class="parent-icon">
                 <i class="lni lni-users"></i>
@@ -252,7 +252,7 @@
 
         <ul>
             <li>
-                <a href="{{ url('users') }}" aria-expanded="true">
+                <a href="{{ route('miembros.index') }}" aria-expanded="true">
                     <i class="bx bx-radio-circle"></i>
                     Miembros
                 </a>
