@@ -38,7 +38,13 @@ class ThemesTest extends TestCase
         $theme->taggable_id = $theme->id;
         $theme->save();
 
-        $theme = Theme::where('name', $this->_themeName)->first();
+        $this->assertDatabaseHas('themes', [
+            'id'            => $theme->id,
+            'name'          => $this->_themeName,
+            'link'          => $this->_themeUrl,
+            'taggable_id'   => $theme->id,
+            'taggable_type' => 'theme',
+        ]);
         $this->assertEquals($this->_themeUrl, $theme->link);
         $this->assertEquals($theme->id, $theme->taggable_id);
     }
