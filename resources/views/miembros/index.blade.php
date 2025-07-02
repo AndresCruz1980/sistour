@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('template_title')
-    Propietarios
+    Miembros
 @endsection
 
 @section('estilos')
@@ -76,10 +76,11 @@
                 <table id="example2" class="table">
                     <thead class="">
                         <tr>
+                            <th>#</th>
+                            <th>Correo</th>
                             <th>Nombres</th>
-                            <th>Cargo</th>
-                            <th>Correo electrónico</th>
-                            <th>Celular</th>
+                            <th>Tipo de usuario</th>
+                            <th>Registrado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -92,42 +93,51 @@
                             @endphp
 
                             <tr>
+                                <td>#{{ $user->id }}</td>
+                                <td>{{ $user->email }}</td>
+                                <td>{{ $user->first_name.' '.$user->last_name }}</td>
                                 <td>
-                                    <a href="{{ URL::to('propietarios/' . $propietario->id) }}">
-                                        {{ $propietario->nombre.' '.$propietario->apellido }}
-                                    </a>
+                                    @foreach ($user->roles as $user_role)
+                                        @if ($user_role->name == 'User')
+                                            @php $badgeClass = 'primary'; $badgeName = 'Usuario'; @endphp
+                                        @elseif ($user_role->name == 'Admin')
+                                            @php $badgeClass = 'success'; $badgeName = 'Administrador'; @endphp
+                                        @else
+                                            @php $badgeClass = 'default'; $badgeName = $user_role->name; @endphp
+                                        @endif
+
+                                        <div class="badge rounded-pill text-{{ $badgeClass }} bg-light-{{ $badgeClass }} p-2 text-uppercase px-3">
+                                            <i class="bx bxs-circle me-1"></i>{{ $badgeName }}
+                                        </div>
+                                    @endforeach
                                 </td>
-                                
-                                <td>{{ $propietario->licencia }}</td>
-                                <td>{{ $propietario->numero }}</td>
-                                <td>{{ $propietario->celular }}</td>
                                 <td>{{ $newDate }}</td>
-                                
+
                                 <td>
                                     <div class="d-flex order-actions">
-                                        <form action="{{ route('propietarios.update', $propietario->id) }}" class="" method="POST" enctype="multipart/form-data">
+                                        <form action="{{ route('miembros.update', $user->id) }}" class="" method="POST" enctype="multipart/form-data">
                                             @csrf
                                             @method('PUT')
-    
-                                            <button type="button" class="btn boton-eliminar ms-1" data-bs-toggle="modal" data-bs-target="#ModalEdit{{ $propietario->id }}">
+
+                                            <button type="button" class="btn boton-eliminar ms-1" data-bs-toggle="modal" data-bs-target="#ModalEdit{{ $user->id }}">
                                                 <i class="bx bxs-edit"></i>
                                             </button>
 
-                                            @include('propietarios.edit')
+                                            @include('miembros.edit')
                                         </form>
 
-                                        <form action="{{ route('estatus.update', $propietario->id) }}" class="ms-1" method="POST">
+                                        <form action="{{ route('estatus.update', $user->id) }}" class="ms-1" method="POST">
                                             @csrf
                                             @method('PUT')
 
-                                            <button type="button" class="btn boton-eliminar ms-1" data-bs-toggle="modal" data-bs-target="#ModalPreDelete{{ $propietario->id }}">
+                                            <button type="button" class="btn boton-eliminar ms-1" data-bs-toggle="modal" data-bs-target="#ModalPreDelete{{ $user->id }}">
                                                 <i class="bx bxs-trash"></i>
                                             </button>
 
                                             <input type="hidden" value="2" id="estatus" name="estatus" />
-                                            <input type="hidden" value="propietarios" id="pagina" name="pagina" />
+                                            <input type="hidden" value="miembros" id="pagina" name="pagina" />
 
-                                            @include('propietarios.predelete')
+                                            @include('miembros.predelete')
                                         </form>
                                     </div>
                                 </td>

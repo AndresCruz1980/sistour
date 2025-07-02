@@ -1,8 +1,8 @@
-<div class="modal fade ModalPreDelete" id="ModalRestaurar{{ $propietario->id }}" tabindex="-1" aria-hidden="true">
+<div class="modal fade ModalPreDelete" id="ModalRestaurar{{ $user->id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header bg-transparent pt-3 py-4 pb-3">
-                <h6 class="modal-title">Restaurar propietario</h6>
+                <h6 class="modal-title">Restaurar miembro</h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             
