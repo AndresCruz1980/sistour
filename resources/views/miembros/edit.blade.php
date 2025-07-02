@@ -1,81 +1,83 @@
-<div class="modal fade" id="ModalEdit{{ $propietario->id }}" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="ModalEdit{{ $user->id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header bg-success pt-3 py-4 pb-3">
-                <h6 class="modal-title text-white">EDITAR PROPIETARIO</h6>
+                <h6 class="modal-title text-white">Editar miembro</h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            
+
             <div class="modal-body bg-white p-4">
                 <div class="row g-3 pt-3 pb-2 col-md-12">
-                    <div class="form-group mb-2 mt-2 col-md-6">
-                        <label class="mb-2">Nombre</label>
-                        <input class="form-control form-control-solid" id="nombre" name="nombre" type="text" required value="{{ $propietario->nombre }}" />
+                    <div class="form-group mb-2 mt-2 col-md-4">
+                        <label class="mb-2">Nombres:</label>
+                        <input class="form-control form-control-solid" id="first_name" name="first_name" type="text" required value="{{ $user->first_name }}" />
+                    </div>
+
+                    <div class="form-group mb-2 mt-2 col-md-4">
+                        <label class="mb-2">Apellidos:</label>
+                        <input class="form-control form-control-solid" id="last_name" name="last_name" type="text" required value="{{ $user->last_name }}" />
+                    </div>
+
+                    <div class="form-group mb-2 mt-2 col-md-4">
+                        <label class="mb-2">Correo electrónico:</label>
+                        <input class="form-control form-control-solid" id="email" name="email" type="email" required value="{{ $user->email }}" />
+                    </div>
+
+                    <div class="form-group mb-2 mt-2 col-md-4">
+                        <label class="mb-2">DNI/Pasaporte:</label>
+                        <input class="form-control form-control-solid" id="documento" name="documento" type="number" required value="{{ $user->documento }}" />
+                    </div>
+
+                    <div class="form-group mb-2 mt-2 col-md-4">
+                        <label class="mb-2">Celular:</label>
+                        <input class="form-control form-control-solid" id="celular" name="celular" type="number" required value="{{ $user->celular }}" />
+                    </div>
+
+                    <div class="form-group mb-2 mt-2 col-md-4">
+                        <label class="mb-2">Dirección:</label>
+                        <input class="form-control form-control-solid" id="direccion" name="direccion" type="text" required value="{{ $user->direccion }}" />
                     </div>
 
                     <div class="form-group mb-2 mt-2 col-md-6">
-                        <label class="mb-2">Apellido</label>
-                        <input class="form-control form-control-solid" id="apellido" name="apellido" type="text" required value="{{ $propietario->apellido }}" />
+                        <label class="mb-2">Contraseña:</label>
+                        <input class="form-control form-control-solid" id="password" name="password" type="password" />
                     </div>
 
                     <div class="form-group mb-2 mt-2 col-md-6">
-                        <label class="mb-2">Cédula de identidad</label>
-                        <input class="form-control form-control-solid" id="cedula" name="cedula" type="number" required value="{{ $propietario->cedula }}" />
+                        <label class="mb-2">Confirmar contraseña:</label>
+                        <input class="form-control form-control-solid" id="password_confirmation" name="password_confirmation" type="password" />
                     </div>
 
                     <div class="form-group mb-2 mt-2 col-md-6">
-                        <label class="mb-2">Licencia de conducir</label>
-                        <input class="form-control form-control-solid" id="licencia" name="licencia" type="text" required value="{{ $propietario->licencia }}" />
-                    </div>
-
-                    <div class="form-group mb-2 mt-2 col-md-6">
-                        <label class="mb-2">Número de registro</label>
-                        <input class="form-control form-control-solid" id="numero" name="numero" type="text" required value="{{ $propietario->numero }}" />
-                    </div>
-
-                    <div class="form-group mb-2 mt-2 col-md-6">
-                        <label class="mb-2">Correo electrónico</label>
-                        <input class="form-control form-control-solid" id="correo" name="correo" type="email" required value="{{ $propietario->correo }}" />
-                    </div>
-
-                    <div class="form-group mb-2 mt-2 col-md-6">
-                        <label class="mb-2">Celular</label>
-                        <input class="form-control form-control-solid" id="celular" name="celular" type="number" required value="{{ $propietario->celular }}" />
-                    </div>
-
-                    <div class="form-group mb-2 mt-2 col-md-6">
-                        <label class="mb-2">Número de cuenta</label>
-                        <input class="form-control form-control-solid" id="cuenta" name="cuenta" type="number" required value="{{ $propietario->cuenta }}" />
-                    </div>
-
-                    <div class="form-group mb-2 mt-2 col-md-6">
-                        <label class="mb-2">Banco</label>
-                        <select class="form-control form-control-solid" id="bancos_id" name="bancos_id" type="select" required>
-                            <option value="{{ $propietario->banco->id }}">{{ $propietario->banco->titulo }}</option>
+                        <label class="mb-2">Estado:</label>
+                        <select class="form-control form-control-solid" id="estatus" name="estatus" type="select" required>
+                            @if($user->estatus == 1)
+                                <option value="1">Activo</option>
+                            @else
+                                <option value="2">Inactivo</option>
+                            @endif
                             <option value="">Seleccionar</option>
-                            @foreach($bancos as $banco)
-                                <option value="{{ $banco->id }}">{{ $banco->titulo }}</option>
-                            @endforeach
+                            <option value="1">Activo</option>
+                            <option value="2">Inactivo</option>
                         </select>
                     </div>
 
                     <div class="form-group mb-2 mt-2 col-md-6">
-                        <label class="mb-2">Referencia</label>
-                        <input class="form-control form-control-solid" id="referencia" name="referencia" type="text" value="{{ $propietario->referencia }}" />
-                    </div>
+                        <label class="mb-2">Rol de usuario:</label>
+                        <select class="form-control form-control-solid" id="role" name="role" type="select" required>
+                            @php
+                                foreach ($user->roles as $userRole) {
+                                    $currentRole = $userRole;
+                                }
+                            @endphp
 
-                    <div class="form-group mb-2 mt-2 col-md-6">
-                        <label class="mb-2">Cédula de referencia</label>
-                        <input class="form-control form-control-solid" id="celref" name="celref" type="number" value="{{ $propietario->celref }}" />
+                            @if ($roles)
+                                @foreach($roles as $role)
+                                    <option value="{{ $role->id }}" {{ $currentRole->id == $role->id ? 'selected="selected"' : '' }}>{{ $role->name }}</option>
+                                @endforeach
+                            @endif
+                        </select>
                     </div>
-
-                    <div class="form-group mb-2 mt-2 col-md-6">
-                        <label class="mb-2">Observaciones</label>
-                        <input class="form-control form-control-solid" id="observaciones" name="observaciones" type="text" value="{{ $propietario->observaciones }}" />
-                    </div>
-
-                    <input id="estatus" name="estatus" type="hidden" value="{{ $propietario->estatus }}" />
-                    <input id="foto" name="foto" type="hidden" value="1" />
                 </div>
             </div>
 
