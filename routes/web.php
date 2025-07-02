@@ -157,7 +157,6 @@ Route::group(['middleware' => ['auth', 'activated', 'activity', 'twostep', 'chec
     Route::get('tour/vips/eliminados', 'App\Http\Controllers\Tour\VipController@eliminados')->name('eliminados');
     Route::resource('tour/vips', App\Http\Controllers\Tour\VipController::class)->names('touvips');
 
-    Route::resource('equipo', App\Http\Controllers\EquipoController::class)->names('equipo');
     Route::resource('reportes', App\Http\Controllers\ReporteController::class)->names('reportes');
 
     Route::resource('estatus', App\Http\Controllers\EstatusController::class)->names('estatus');
