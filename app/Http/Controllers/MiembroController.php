@@ -171,8 +171,8 @@ class MiembroController extends Controller
      */
     public function destroy($id)
     {
-        Servicio::destroy($id);
+        User::findOrFail($id)->delete();
 
-        return redirect()->route('servicios.index')->with('success','Servicio eliminado');
+        return redirect()->route('miembros.index')->with('success','Personal eliminado');
     }
 }
